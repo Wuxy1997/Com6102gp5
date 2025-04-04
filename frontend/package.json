@@ -16,6 +16,9 @@
     "postcss": "^8.4.31",
     "autoprefixer": "^10.4.16"
   },
+  "devDependencies": {
+    "@types/axios": "^0.14.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

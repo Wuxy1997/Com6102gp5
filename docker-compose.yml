@@ -2,17 +2,22 @@ version: '3.8'
 
 services:
   frontend:
+    container_name: fitness-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://47.239.24.10:5000
+      - REACT_APP_API_URL=http://localhost:5000
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
   backend:
+    container_name: fitness-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -21,4 +26,7 @@ services:
     environment:
       - MONGODB_URI=mongodb+srv://wubowen97:970412qw@ht.qyiekim.mongodb.net/?retryWrites=true&w=majority&appName=ht
       - JWT_SECRET=your_jwt_secret_key
-      - PORT=5000 
+      - PORT=5000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules 

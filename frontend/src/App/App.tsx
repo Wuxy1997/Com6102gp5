@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Login from '../pages/Login.tsx';
-import Register from '../pages/Register.tsx';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
 
 const App: React.FC = () => {
   return (

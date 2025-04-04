@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from '../utils/axios';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,13 +11,15 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+      const response = await axios.post('/api/auth/login', {
         email,
         password,
       });
+      console.log('Login response:', response.data);
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Invalid email or password');
     }
   };
