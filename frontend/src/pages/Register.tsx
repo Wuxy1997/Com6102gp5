@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,10 +17,12 @@ const Register: React.FC = () => {
         password,
         name,
       });
+      console.log('Registration response:', response.data);
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     }
   };
 
@@ -96,9 +98,9 @@ const Register: React.FC = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
                 Sign in
-              </a>
+              </Link>
             </p>
           </div>
         </form>
