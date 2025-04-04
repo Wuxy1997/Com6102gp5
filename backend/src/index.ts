@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import { login, register } from './controllers/authController';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 
@@ -15,8 +15,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://wubowen97:970412qw@ht
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
-app.post('/api/auth/login', login);
-app.post('/api/auth/register', register);
+app.use('/api/auth', authRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
