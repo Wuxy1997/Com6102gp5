@@ -14,15 +14,8 @@ app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://wubowen97:970412qw@ht.qyiekim.mongodb.net/?retryWrites=true&w=majority&appName=ht')
-  .then(async () => {
+  .then(() => {
     console.log('Connected to MongoDB');
-    // Drop the users collection if it exists
-    try {
-      await mongoose.connection.db.dropCollection('users');
-      console.log('Dropped users collection');
-    } catch (err) {
-      console.log('No users collection to drop');
-    }
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err);
