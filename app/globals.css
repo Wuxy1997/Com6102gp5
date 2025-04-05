@@ -1,0 +1,454 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  /* 电玩风格主题 */
+  .retro-gaming {
+    --background: 0 0% 0%; /* 纯黑色背景 */
+    --foreground: 120 100% 70%; /* 提高文字亮度增强对比度 */
+
+    --card: 0 0% 5%; /* 卡片背景 */
+    --card-foreground: 120 100% 70%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 120 100% 70%;
+
+    --primary: 120 100% 50%; /* 绿色 */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 180 100% 50%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 10%; /* 调整静音背景色为深灰色 */
+    --muted-foreground: 120 100% 70%;
+
+    --accent: 60 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 120 100% 60%; /* 增强边框亮度 */
+    --input: 0 0% 10%;
+    --ring: 120 100% 50%; /* 绿色 */
+
+    --radius: 0px;
+
+    /* 新增标题颜色变量 */
+    --title-color: 300 100% 60%; /* 紫色标题 */
+
+    /* 新增按钮颜色变量 */
+    --cta-button-color: 120 100% 50%; /* 绿色按钮 */
+    --cta-button-glow: 120 100% 50%; /* 绿色发光 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* 电玩风格特定样式 */
+.retro-gaming * {
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  font-weight: bold; /* 加粗字体提高可读性 */
+}
+
+/* 添加一些额外的电玩风格元素，增强深色背景下的视觉效果 */
+.retro-gaming {
+  background-color: #000000;
+  background-image: radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.03) 0%, rgba(0, 0, 0, 0) 70%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%),
+    linear-gradient(to bottom, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+  background-size: auto, auto, 100% 8px;
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-attachment: fixed;
+}
+
+/* 确保整个HTML和BODY在retro-gaming主题下都是黑色 */
+html.retro-gaming,
+.retro-gaming body {
+  background-color: #000000 !important;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 调整白色区域为深灰色 */
+.retro-gaming .bg-white,
+.retro-gaming .bg-background,
+.retro-gaming .bg-gray-50,
+.retro-gaming .bg-gray-100,
+.retro-gaming .bg-gray-200,
+.retro-gaming [class*="bg-white"],
+.retro-gaming [class*="bg-gray"],
+.retro-gaming [class*="bg-slate"],
+.retro-gaming [class*="bg-zinc"] {
+  background-color: #000000 !important; /* 使用黑色替代白色和灰色 */
+}
+
+/* 标题样式修改为紫色 */
+.retro-gaming h1,
+.retro-gaming h2,
+.retro-gaming h3,
+.retro-gaming h4,
+.retro-gaming .page-title,
+.retro-gaming .section-title {
+  color: hsl(var(--title-color)) !important;
+  text-shadow: 0 0 5px rgba(255, 0, 255, 0.5), 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+.retro-gaming button,
+.retro-gaming .btn {
+  border: 2px solid hsl(var(--primary)) !important;
+  box-shadow: 4px 4px 0px 0px hsl(var(--primary));
+  transition: all 0.1s ease;
+  transform: translate(0, 0);
+  background-color: transparent !important;
+  color: white !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.retro-gaming button:hover,
+.retro-gaming .btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px hsl(var(--primary));
+}
+
+.retro-gaming button:active,
+.retro-gaming .btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px hsl(var(--primary));
+}
+
+/* 特殊CTA按钮样式 */
+.retro-gaming .cta-button {
+  background-color: hsl(var(--cta-button-color)) !important;
+  color: black !important;
+  border: 2px solid white !important;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.7) !important;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s ease !important;
+}
+
+.retro-gaming .cta-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+  z-index: -1;
+}
+
+.retro-gaming .cta-button:hover::before {
+  left: 100%;
+}
+
+.retro-gaming .cta-button:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.9) !important;
+  transform: scale(1.05) !important;
+}
+
+.retro-gaming .cta-button:active {
+  transform: scale(0.98) !important;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5) !important;
+}
+
+.retro-gaming .card {
+  border: 2px solid hsl(var(--border));
+  /* 增强卡片边框发光效果 */
+  box-shadow: 0 0 0 2px hsl(var(--border)), 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 5px 0 rgba(0, 255, 0, 0.5), 0 0 15px 0
+    rgba(0, 255, 0, 0.2);
+}
+
+.retro-gaming input,
+.retro-gaming select,
+.retro-gaming textarea {
+  border: 2px solid hsl(var(--border));
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+}
+
+@keyframes pixel-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.retro-gaming .animate-pulse {
+  animation: pixel-pulse 2s infinite;
+}
+
+/* 导航栏样式调整 */
+.retro-gaming nav {
+  border-bottom: 2px solid hsl(var(--border));
+}
+
+.retro-gaming nav .nav-container {
+  max-width: 100% !important;
+  padding: 0 1rem !important;
+}
+
+.retro-gaming nav .nav-links {
+  gap: 0.5rem !important;
+}
+
+.retro-gaming nav .nav-link {
+  padding: 0.5rem 0.75rem !important;
+}
+
+.retro-gaming [role="tab"] {
+  border: 2px solid hsl(var(--border));
+  border-bottom: none;
+}
+
+.retro-gaming [role="tab"][data-state="active"] {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* 添加扫描线效果 */
+.retro-gaming::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* 增强文字可读性 */
+.retro-gaming p,
+.retro-gaming span,
+.retro-gaming div,
+.retro-gaming a {
+  text-shadow: 0 0 2px rgba(0, 255, 0, 0.7);
+}
+
+/* 调整表格和列表背景 */
+.retro-gaming table,
+.retro-gaming tbody,
+.retro-gaming tr,
+.retro-gaming td,
+.retro-gaming th {
+  background-color: #000000;
+}
+
+/* 按钮闪烁动画 */
+@keyframes button-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+}
+
+.retro-gaming .cta-button-glow {
+  animation: button-glow 2s infinite;
+}
+
+/* 图片悬停效果 */
+.retro-gaming .feature-image {
+  transition: all 0.5s ease;
+  border: 2px solid transparent;
+}
+
+.retro-gaming .feature-image:hover {
+  transform: scale(1.02);
+  border: 2px solid hsl(var(--border));
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+/* 背景图片文字增强 */
+.retro-gaming .hero-text,
+.retro-gaming .footer-text {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* 删除背景图片的像素风格边框 */
+.retro-gaming .bg-image-section::before {
+  display: none;
+}
+
+/* 新增绿色按钮样式 */
+.retro-gaming .green-button {
+  background-color: transparent !important;
+  color: white !important;
+  border: 2px solid #00ff00 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.retro-gaming .green-button:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.8) !important;
+  transform: translateY(-2px);
+}
+
+.retro-gaming .green-button:active {
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5) !important;
+  transform: translateY(1px);
+}
+
+.retro-gaming .green-filled-button {
+  background-color: #00ff00 !important;
+  color: black !important;
+  border: 2px solid white !important;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5) !important;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+}
+
+.retro-gaming .green-filled-button:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.8) !important;
+  transform: translateY(-2px);
+}
+
+.retro-gaming .green-filled-button:active {
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5) !important;
+  transform: translateY(1px);
+}
+
+/* 确保retro-gaming主题下的所有页面都有黑色背景 */
+.retro-gaming main {
+  background-color: #000000 !important;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+}
+
+/* 确保容器不限制宽度 */
+.retro-gaming .container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background-color: #000000 !important;
+  min-height: 100vh;
+}
+
+/* 添加横条效果到整个页面 */
+.retro-gaming .horizontal-stripes {
+  background-image: linear-gradient(to bottom, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+  background-size: 100% 8px;
+  background-repeat: repeat;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+/* 确保所有页面内容区域都有足够的高度 */
+.retro-gaming #__next,
+.retro-gaming [data-nextjs-root],
+.retro-gaming main,
+.retro-gaming .min-h-screen {
+  min-height: 100vh !important;
+  background-color: #000000 !important;
+}
+
+/* 特别处理社交页面 */
+.retro-gaming .min-h-screen.bg-gray-50,
+.retro-gaming .min-h-screen.bg-gray-100,
+.retro-gaming .min-h-screen.dark\:bg-gray-900 {
+  background-color: #000000 !important;
+}
+
