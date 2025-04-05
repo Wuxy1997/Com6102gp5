@@ -4,6 +4,7 @@ import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { get, post } from "@/lib/api"
 
 type User = {
   _id: string
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         console.log("Checking authentication status...")
-        const res = await fetch("/api/auth/me")
+        const res = await get("/api/auth/me")
         console.log("Auth check response status:", res.status)
 
         if (res.ok) {
@@ -62,12 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       console.log("Login attempt with email:", email)
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
-
+      const res = await post("/api/auth/login", { email, password })
       console.log("Login response status:", res.status)
 
       if (res.ok) {
@@ -89,12 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     try {
       console.log("Registration attempt with email:", email)
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      })
-
+      const res = await post("/api/auth/register", { name, email, password })
       console.log("Registration response status:", res.status)
 
       if (res.ok) {
@@ -116,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       console.log("Logout attempt")
-      await fetch("/api/auth/logout", { method: "POST" })
+      await post("/api/auth/logout", {})
       console.log("Logout successful")
       setUser(null)
       router.push("/login")

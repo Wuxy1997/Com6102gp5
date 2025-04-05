@@ -1,7 +1,10 @@
 import { MongoClient } from "mongodb"
 
-// 使用环境变量中的MongoDB URI
-const uri = process.env.MONGODB_URI || "mongodb://mongo:27017/health-app"
+if (!process.env.MONGODB_URI) {
+  throw new Error('Please add your MongoDB URI to .env')
+}
+
+const uri = process.env.MONGODB_URI
 const options = {}
 
 let client
@@ -28,7 +31,7 @@ export default clientPromise
 // Add the missing connectToDatabase export
 export async function connectToDatabase() {
   const client = await clientPromise
-  const db = client.db("health-app")
+  const db = client.db("health_app")
   return { client, db }
 }
 

@@ -3,13 +3,8 @@ import { cookies } from "next/headers"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
-// 在函数开始处添加更多日志记录
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const allCookies = cookieStore.getAll()
-    console.log("All cookies:", allCookies)
-
     const sessionId = cookies().get("sessionId")?.value
 
     console.log("Session ID from cookie:", sessionId)

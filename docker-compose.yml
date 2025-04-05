@@ -2,17 +2,16 @@ version: '3'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/health_app
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=http://47.239.24.10:3000
-      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
     depends_on:
       - mongo
-    restart: always
     networks:
       - app-network
 

@@ -16,6 +16,7 @@ const inter = Inter({
 export const metadata = {
   title: "Health & Fitness Tracker",
   description: "Track your health data and get personalized diet and exercise recommendations",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -39,3 +40,6 @@ export default function RootLayout({
   )
 }
 
+
+
+import './globals.css'

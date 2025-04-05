@@ -51,24 +51,26 @@ export async function POST(request: Request) {
     await db.collection("sessions").insertOne(session)
     console.log(`Session created with ID: ${sessionId}`)
 
-    // Set cookie
-    cookies().set({
-      name: "sessionId",
-      value: sessionId,
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production", // 在生产环境中设为true
-      maxAge: 60 * 60 * 24 * 7, // 7天
-    })
-    console.log("Cookie set successfully")
-
-    // Return user data (without password)
-    return NextResponse.json({
+    // Set cookie with proper domain and secure settings
+    const response = NextResponse.json({
       _id: user._id.toString(),
       name: user.name,
       email: user.email,
     })
+
+    const domain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN
+
+    response.cookies.set("sessionId", sessionId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+      domain,
+    })
+
+    console.log("Cookie set successfully")
+    return response
   } catch (error) {
     console.error("Login error:", error)
     return NextResponse.json({ error: "Login failed, please try again later" }, { status: 500 })

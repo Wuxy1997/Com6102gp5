@@ -5,8 +5,9 @@ FROM base AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
+RUN apk add --no-cache python3 make g++ gcc
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
