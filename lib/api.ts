@@ -2,7 +2,7 @@ export async function fetchWithCredentials(url: string, options: RequestInit = {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ''
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
   
-  return fetch(fullUrl, {
+  const response = await fetch(fullUrl, {
     ...options,
     credentials: 'include',
     headers: {
@@ -10,6 +10,16 @@ export async function fetchWithCredentials(url: string, options: RequestInit = {
       ...options.headers,
     },
   })
+
+  // Log response details for debugging
+  console.log('API Response:', {
+    url: fullUrl,
+    status: response.status,
+    headers: Object.fromEntries(response.headers.entries()),
+    cookies: document.cookie,
+  })
+
+  return response
 }
 
 export async function get(url: string, options: RequestInit = {}) {

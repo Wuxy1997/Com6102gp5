@@ -58,15 +58,17 @@ export async function POST(request: Request) {
       email: user.email,
     })
 
-    const domain = process.env.NEXT_PUBLIC_COOKIE_DOMAIN
+    // Get request headers
+    const host = request.headers.get("host") || ""
+    const protocol = request.headers.get("x-forwarded-proto") || "http"
+    console.log(`Setting cookie for ${protocol}://${host}`)
 
     response.cookies.set("sessionId", sessionId, {
       httpOnly: true,
-      secure: true,
+      secure: false, // Set to false for now since we're using HTTP
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
-      domain,
     })
 
     console.log("Cookie set successfully")
