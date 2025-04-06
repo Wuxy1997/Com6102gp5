@@ -1,5 +1,8 @@
 export async function fetchWithCredentials(url: string, options: RequestInit = {}) {
-  return fetch(url, {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
+  
+  return fetch(fullUrl, {
     ...options,
     credentials: 'include',
     headers: {

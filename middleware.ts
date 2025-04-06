@@ -6,18 +6,25 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/", "/login", "/register", "/forgot-password", "/api/auth/login", "/api/auth/register"]
+  const publicRoutes = ["/", "/login", "/register", "/forgot-password"]
+  const publicApiRoutes = ["/api/auth/login", "/api/auth/register"]
 
   // Check if the route is public
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.some((route) => pathname === route)
+  const isPublicApiRoute = publicApiRoutes.some((route) => pathname.startsWith(route))
 
   // If it's a public route, allow access
-  if (isPublicRoute) {
+  if (isPublicRoute || isPublicApiRoute) {
     return NextResponse.next()
   }
 
-  // If there's no session and it's not a public route, redirect to login
+  // If there's no session
   if (!sessionId) {
+    // For API routes, return 401
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    // For other routes, redirect to login
     const url = new URL("/login", request.url)
     url.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(url)

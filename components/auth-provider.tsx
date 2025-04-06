@@ -35,28 +35,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        console.log("Checking authentication status...")
-        const res = await get("/api/auth/me")
-        console.log("Auth check response status:", res.status)
+  // Function to check auth status
+  const checkAuth = async () => {
+    try {
+      console.log("Checking authentication status...")
+      const res = await get("/api/auth/me")
+      console.log("Auth check response status:", res.status)
 
-        if (res.ok) {
-          const userData = await res.json()
-          console.log("User data received:", userData)
-          setUser(userData)
-        } else {
-          console.log("Not authenticated")
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-      } finally {
-        setLoading(false)
+      if (res.ok) {
+        const userData = await res.json()
+        console.log("User data received:", userData)
+        setUser(userData)
+        return true
+      } else {
+        console.log("Not authenticated")
+        setUser(null)
+        return false
       }
+    } catch (error) {
+      console.error("Auth check failed:", error)
+      setUser(null)
+      return false
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     checkAuth()
   }, [])
 
@@ -70,6 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await res.json()
         console.log("Login successful, user data:", userData)
         setUser(userData)
+        // Check auth status after login
+        await checkAuth()
         return true
       }
 
@@ -92,6 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await res.json()
         console.log("Registration successful, user data:", userData)
         setUser(userData)
+        // Check auth status after registration
+        await checkAuth()
         return true
       }
 
