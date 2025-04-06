@@ -17,7 +17,7 @@ export class BailianService {
   async generateText(prompt: string): Promise<string> {
     try {
       const requestBody = JSON.stringify({
-        model: "qwen-max",
+        model: "qwen-turbo",
         input: {
           messages: [
             {
@@ -29,11 +29,6 @@ export class BailianService {
               content: prompt
             }
           ]
-        },
-        parameters: {
-          temperature: 0.7,
-          top_p: 0.8,
-          result_format: "message"
         }
       });
 
@@ -42,19 +37,28 @@ export class BailianService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
-          'X-DashScope-SSE': 'disable'
+          'X-DashScope-Async': 'false'
         },
         body: requestBody
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
         throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
-      return data.output.text;
+      if (data.output && data.output.text) {
+        return data.output.text;
+      } else if (data.message && data.message.content) {
+        return data.message.content;
+      } else {
+        console.error('Unexpected API response format:', data);
+        throw new Error('Unexpected API response format');
+      }
     } catch (error) {
-      console.error('Error calling Bailian API:', error);
+      console.error('Error calling DashScope API:', error);
       throw new Error('Failed to generate AI response');
     }
   }

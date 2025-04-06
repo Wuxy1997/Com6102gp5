@@ -5,9 +5,13 @@ FROM base AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-RUN apk add --no-cache python3 make g++ gcc
+RUN apk add --no-cache python3 py3-pip make g++ gcc
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
+
+# Install Python dependencies
+COPY python/requirements.txt ./python/
+RUN pip3 install -r python/requirements.txt
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -29,10 +33,18 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Install Python and pip
+RUN apk add --no-cache python3 py3-pip
+
+# Install Python dependencies
+COPY python/requirements.txt ./python/
+RUN pip3 install -r python/requirements.txt
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/python ./python
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
