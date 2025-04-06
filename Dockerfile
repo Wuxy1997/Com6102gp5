@@ -16,7 +16,8 @@ RUN apk add --no-cache \
     linux-headers \
     build-base \
     cmake \
-    git
+    git \
+    openblas-dev
 
 # Create and activate virtual environment
 RUN python3 -m venv /opt/venv
@@ -31,11 +32,19 @@ RUN . /opt/venv/bin/activate && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache-dir setuptools wheel && \
     # Install base dependencies first
-    pip3 install --no-cache-dir numpy packaging pyyaml requests tqdm filelock typing-extensions sympy && \
-    # Then install PyTorch and related packages
-    pip3 install --no-cache-dir torch==2.2.0+cpu -f https://download.pytorch.org/whl/cpu && \
-    # Finally install the rest with --no-deps to avoid conflicts
-    pip3 install --no-cache-dir --no-deps -r python/requirements.txt
+    pip3 install --no-cache-dir \
+        numpy \
+        packaging \
+        pyyaml \
+        requests \
+        tqdm \
+        filelock \
+        typing-extensions \
+        sympy && \
+    # Install PyTorch CPU
+    pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
+    # Install remaining packages
+    pip3 install --no-cache-dir -r python/requirements.txt
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -58,7 +67,13 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install Python and create virtual environment
-RUN apk add --no-cache python3 py3-pip python3-dev musl-dev git
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    python3-dev \
+    musl-dev \
+    git \
+    openblas-dev
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"

@@ -1,4 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cpu
+# Base dependencies
 numpy>=1.24.3
 safetensors>=0.4.1
 packaging>=20.0
@@ -10,7 +10,15 @@ tqdm>=4.65.0
 filelock>=3.13.1
 typing-extensions>=4.8.0
 sympy>=1.12
-torch==2.2.0+cpu
+
+# PyTorch and related packages
+--extra-index-url https://download.pytorch.org/whl/cpu
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.2.0
+torchvision==0.17.0
+torchaudio==2.2.0
+
+# Transformers and related packages
 transformers==4.36.2
 accelerate==0.25.0
 bitsandbytes-cpu==0.41.3
