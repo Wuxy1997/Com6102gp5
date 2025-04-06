@@ -30,7 +30,12 @@ COPY python/requirements.txt ./python/
 RUN . /opt/venv/bin/activate && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache-dir setuptools wheel && \
-    pip3 install --no-cache-dir -r python/requirements.txt
+    # Install base dependencies first
+    pip3 install --no-cache-dir numpy packaging pyyaml requests tqdm filelock typing-extensions sympy && \
+    # Then install PyTorch and related packages
+    pip3 install --no-cache-dir torch==2.2.0+cpu -f https://download.pytorch.org/whl/cpu && \
+    # Finally install the rest with --no-deps to avoid conflicts
+    pip3 install --no-cache-dir --no-deps -r python/requirements.txt
 
 # Rebuild the source code only when needed
 FROM base AS builder
