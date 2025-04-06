@@ -13,13 +13,12 @@ sympy>=1.12
 
 # PyTorch and related packages
 --extra-index-url https://download.pytorch.org/whl/cpu
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.2.0
-torchvision==0.17.0
-torchaudio==2.2.0
+torch==2.2.0+cpu
+torchvision==0.17.0+cpu
+torchaudio==2.2.0+cpu
 
 # Transformers and related packages
 transformers==4.36.2
 accelerate==0.25.0
-bitsandbytes-cpu==0.41.3
+optimum==1.16.1
 sentencepiece==0.1.99 
