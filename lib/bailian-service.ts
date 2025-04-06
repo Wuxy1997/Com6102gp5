@@ -1,3 +1,11 @@
+import crypto from 'crypto';
+
+interface BailianConfig {
+  apiKey: string;
+  apiSecret: string;
+  agentKey: string;
+}
+
 export class BailianService {
   private apiKey: string;
   private baseUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
@@ -9,7 +17,7 @@ export class BailianService {
   async generateText(prompt: string): Promise<string> {
     try {
       const requestBody = JSON.stringify({
-        model: "deepseek-r1-distil-qwen-7b",
+        model: "qwen-max",
         input: {
           messages: [
             {
@@ -21,37 +29,30 @@ export class BailianService {
               content: prompt
             }
           ]
+        },
+        parameters: {
+          temperature: 0.7,
+          top_p: 0.8,
+          result_format: "message"
         }
       });
 
-      console.log('Making API request with key:', this.apiKey);
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
-          'X-DashScope-Async': 'false'
+          'X-DashScope-SSE': 'disable'
         },
         body: requestBody
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`API request failed: ${response.status} - ${errorText}`);
+        throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
-      
-      if (data.output && data.output.text) {
-        return data.output.text;
-      } else if (data.message && data.message.content) {
-        return data.message.content;
-      } else {
-        console.error('Unexpected API response format:', data);
-        throw new Error('Unexpected API response format');
-      }
+      return data.output.text;
     } catch (error) {
       console.error('Error calling Bailian API:', error);
       throw new Error('Failed to generate AI response');
