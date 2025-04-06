@@ -15,7 +15,8 @@ RUN apk add --no-cache \
     musl-dev \
     linux-headers \
     build-base \
-    cmake
+    cmake \
+    git
 
 # Create and activate virtual environment
 RUN python3 -m venv /opt/venv
@@ -28,6 +29,7 @@ RUN npm install --legacy-peer-deps
 COPY python/requirements.txt ./python/
 RUN . /opt/venv/bin/activate && \
     pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir setuptools wheel && \
     pip3 install --no-cache-dir -r python/requirements.txt
 
 # Rebuild the source code only when needed
@@ -51,7 +53,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install Python and create virtual environment
-RUN apk add --no-cache python3 py3-pip python3-dev musl-dev
+RUN apk add --no-cache python3 py3-pip python3-dev musl-dev git
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
