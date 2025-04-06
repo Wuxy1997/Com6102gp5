@@ -8,10 +8,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/health_app
+      - MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
       - OLLAMA_HOST=http://ollama:11434
+      - NODE_ENV=production
+      - NEXTAUTH_SECRET=your-nextauth-secret-key
+      - NEXTAUTH_URL=http://localhost:3000
     depends_on:
-      - mongo
       - ollama
 
   ollama:
@@ -27,14 +29,6 @@ services:
         reservations:
           memory: 8G
 
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
 volumes:
   ollama_data:
-  mongo_data:
 

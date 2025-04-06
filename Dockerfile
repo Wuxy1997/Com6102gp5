@@ -8,7 +8,7 @@ WORKDIR /app
 
 # 复制 package.json 和 package-lock.json
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # 构建应用
 FROM base AS builder
@@ -17,8 +17,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # 设置环境变量
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
 
 # 构建应用
 RUN npm run build
@@ -27,8 +28,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -49,8 +50,8 @@ USER nextjs
 EXPOSE 3000
 
 # 启动应用
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
 
