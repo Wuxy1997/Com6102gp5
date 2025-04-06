@@ -15,7 +15,7 @@ export class OllamaService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "llama2-7b-chat",
+          model: "tinyllama",
           prompt: prompt,
           stream: false,
           options: {
