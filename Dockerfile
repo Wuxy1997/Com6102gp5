@@ -5,13 +5,18 @@ FROM base AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-RUN apk add --no-cache python3 py3-pip make g++ gcc
+RUN apk add --no-cache python3 py3-pip make g++ gcc python3-dev
+
+# Create and activate virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
 
-# Install Python dependencies
+# Install Python dependencies in virtual environment
 COPY python/requirements.txt ./python/
-RUN pip3 install -r python/requirements.txt
+RUN . /opt/venv/bin/activate && pip3 install --no-cache-dir -r python/requirements.txt
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -33,12 +38,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install Python and pip
-RUN apk add --no-cache python3 py3-pip
+# Install Python and create virtual environment
+RUN apk add --no-cache python3 py3-pip python3-dev
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
-COPY python/requirements.txt ./python/
-RUN pip3 install -r python/requirements.txt
+# Copy virtual environment from deps stage
+COPY --from=deps /opt/venv /opt/venv
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
