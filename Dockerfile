@@ -5,7 +5,17 @@ FROM base AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-RUN apk add --no-cache python3 py3-pip make g++ gcc python3-dev
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    gcc \
+    python3-dev \
+    musl-dev \
+    linux-headers \
+    build-base \
+    cmake
 
 # Create and activate virtual environment
 RUN python3 -m venv /opt/venv
@@ -16,7 +26,9 @@ RUN npm install --legacy-peer-deps
 
 # Install Python dependencies in virtual environment
 COPY python/requirements.txt ./python/
-RUN . /opt/venv/bin/activate && pip3 install --no-cache-dir -r python/requirements.txt
+RUN . /opt/venv/bin/activate && \
+    pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir -r python/requirements.txt
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -39,7 +51,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install Python and create virtual environment
-RUN apk add --no-cache python3 py3-pip python3-dev
+RUN apk add --no-cache python3 py3-pip python3-dev musl-dev
+
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
