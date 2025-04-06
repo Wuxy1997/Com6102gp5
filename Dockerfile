@@ -17,7 +17,12 @@ RUN apk add --no-cache \
     build-base \
     cmake \
     git \
-    openblas-dev
+    openblas-dev \
+    arrow-dev \
+    arrow \
+    arrow-static \
+    arrow-glib-dev \
+    boost-dev
 
 # Create and activate virtual environment
 RUN python3 -m venv /opt/venv
@@ -73,7 +78,9 @@ RUN apk add --no-cache \
     python3-dev \
     musl-dev \
     git \
-    openblas-dev
+    openblas-dev \
+    arrow \
+    arrow-dev
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
