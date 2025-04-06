@@ -44,7 +44,8 @@ export default function AIRecommendationsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt: "Generate personalized health, exercise, and diet recommendations based on my data",
+          action: "recommendations",
+          type: "general"
         }),
       })
 

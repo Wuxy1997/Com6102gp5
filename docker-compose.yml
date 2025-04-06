@@ -22,12 +22,17 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+      - OLLAMA_HOST=0.0.0.0:11434
     deploy:
       resources:
         limits:
-          memory: 16G
-        reservations:
           memory: 8G
+          cpus: '4'
+        reservations:
+          memory: 4G
+          cpus: '2'
 
 volumes:
   ollama_data:
