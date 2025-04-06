@@ -1,26 +1,54 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { connectToDatabase } from "@/lib/mongodb"
+import { NextRequest, NextResponse } from "next/server"
+import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { AIService } from "@/lib/ai-service"
+
+interface FoodRecord {
+  date: Date
+  name: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+}
+
+interface ExerciseRecord {
+  date: Date
+  type: string
+  duration: number
+  caloriesBurned: number
+}
+
+interface HealthRecord {
+  date: Date
+  weight: number
+  height: number
+  bloodPressure: string
+  heartRate: number
+  sleepHours: number
+}
 
 // 统一处理所有AI相关请求
 export async function POST(req: NextRequest) {
   try {
-    const { db } = await connectToDatabase()
+    const sessionId = req.cookies.get("sessionId")?.value
 
-    // 获取用户ID和验证
-    const authCookie = req.cookies.get("auth")?.value
-    if (!authCookie) {
+    if (!sessionId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const [userId, _] = authCookie.split(":")
-    if (!userId) {
-      return NextResponse.json({ error: "Invalid auth cookie" }, { status: 401 })
+    const client = await clientPromise
+    const db = client.db("health_app")
+
+    // Find session
+    const session = await db.collection("sessions").findOne({ _id: sessionId })
+
+    if (!session || new Date(session.expiresAt) < new Date()) {
+      return NextResponse.json({ error: "Session expired" }, { status: 401 })
     }
 
-    // 获取用户数据
-    const user = await db.collection("users").findOne({ _id: new ObjectId(userId) })
+    // Get user data
+    const user = await db.collection("users").findOne({ _id: new ObjectId(session.userId) })
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
@@ -41,12 +69,16 @@ export async function POST(req: NextRequest) {
     } else if (action === "recommendations") {
       // 处理推荐请求
       // 获取用户数据
-      const userData: any = {}
+      const userData: {
+        foodData?: FoodRecord[];
+        exerciseData?: ExerciseRecord[];
+        healthData?: HealthRecord[];
+      } = {}
 
       // 根据类型获取相关数据
       if (type === "diet" || type === "general") {
-        const foodData = await db.collection("foodRecords").find({ userId }).sort({ date: -1 }).limit(10).toArray()
-        userData.foodData = foodData.map((data) => ({
+        const foodData = await db.collection("foodRecords").find({ userId: session.userId }).sort({ date: -1 }).limit(10).toArray()
+        userData.foodData = foodData.map((data: FoodRecord) => ({
           date: new Date(data.date).toISOString().split("T")[0],
           name: data.name,
           calories: data.calories,
@@ -59,11 +91,11 @@ export async function POST(req: NextRequest) {
       if (type === "exercise" || type === "general") {
         const exerciseData = await db
           .collection("exerciseRecords")
-          .find({ userId })
+          .find({ userId: session.userId })
           .sort({ date: -1 })
           .limit(10)
           .toArray()
-        userData.exerciseData = exerciseData.map((data) => ({
+        userData.exerciseData = exerciseData.map((data: ExerciseRecord) => ({
           date: new Date(data.date).toISOString().split("T")[0],
           type: data.type,
           duration: data.duration,
@@ -72,8 +104,8 @@ export async function POST(req: NextRequest) {
       }
 
       if (type === "sleep" || type === "general") {
-        const healthData = await db.collection("healthData").find({ userId }).sort({ date: -1 }).limit(10).toArray()
-        userData.healthData = healthData.map((data) => ({
+        const healthData = await db.collection("healthData").find({ userId: session.userId }).sort({ date: -1 }).limit(10).toArray()
+        userData.healthData = healthData.map((data: HealthRecord) => ({
           date: new Date(data.date).toISOString().split("T")[0],
           weight: data.weight,
           height: data.height,
