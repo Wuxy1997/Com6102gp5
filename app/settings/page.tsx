@@ -47,6 +47,14 @@ export default function SettingsPage() {
     language: "en",
   })
 
+  const themeOptions = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "System" },
+    { value: "retro-gaming", label: "Retro Gaming" },
+    { value: "dopamine", label: "Dopamine" },
+  ];
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login")
@@ -238,10 +246,11 @@ export default function SettingsPage() {
                         <SelectValue placeholder={t("Select theme")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="light">{t("light")}</SelectItem>
-                        <SelectItem value="dark">{t("dark")}</SelectItem>
-                        <SelectItem value="system">{t("system")}</SelectItem>
-                        <SelectItem value="retro-gaming">{t("retro-gaming")}</SelectItem>
+                        {themeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

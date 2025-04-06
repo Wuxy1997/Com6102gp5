@@ -67,7 +67,8 @@ export async function PUT(request: Request) {
     const data = await request.json()
 
     // Validate theme
-    if (data.theme && !["light", "dark", "system"].includes(data.theme)) {
+    const validThemes = ["light", "dark", "system", "retro-gaming", "dopamine"]
+    if (data.theme && !validThemes.includes(data.theme)) {
       return NextResponse.json({ error: "Invalid theme value" }, { status: 400 })
     }
 
