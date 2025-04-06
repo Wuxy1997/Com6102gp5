@@ -1,7 +1,7 @@
 export class OllamaService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = "http://47.86.22.254:11434") {
+  constructor(baseUrl: string = process.env.OLLAMA_HOST || "http://localhost:11434") {
     this.baseUrl = baseUrl;
   }
 

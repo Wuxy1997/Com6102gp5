@@ -1,53 +1,56 @@
-FROM node:18-alpine AS base
+# 使用官方 Node.js 镜像作为基础镜像
+FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# 安装依赖
 FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-RUN apk add --no-cache python3 make g++ gcc
+# 复制 package.json 和 package-lock.json
 COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+RUN npm ci
 
-# Rebuild the source code only when needed
+# 构建应用
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-ENV NEXT_TELEMETRY_DISABLED=1
+# 设置环境变量
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
 
+# 构建应用
 RUN npm run build
 
-# Production image, copy all the files and run next
+# 生产环境
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Set the correct permission for prerender cache
+# 设置正确的权限
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Automatically leverage output traces to reduce image size
+# 复制构建产物
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
+# 暴露端口
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
+# 启动应用
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "server.js"]
 
