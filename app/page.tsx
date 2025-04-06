@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useAuth } from "@/components/auth-provider"
 import { MainNav } from "@/components/main-nav"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -14,8 +15,13 @@ import {
 } from "@/components/ui/dialog"
 import { ChevronDown, Activity, Heart, Brain } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useLanguage } from "@/components/language-provider"
 
 export default function HomePage() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const { t } = useLanguage()
   const [activeSection, setActiveSection] = useState(0)
   const sectionsRef = useRef<HTMLDivElement[]>([])
   const [isScrolling, setIsScrolling] = useState(false)
@@ -24,28 +30,24 @@ export default function HomePage() {
   // 减少为3个主要内容部分
   const sections = [
     {
-      title: "Track Your Health Data",
-      description: "Record and analyze key health metrics like weight, height, BMI, and blood pressure",
-      icon: <Activity className="h-20 w-20 text-primary" />,
-      details:
-        "Our health tracking system allows you to easily record various health metrics including weight, height, BMI, blood pressure, heart rate, sleep quality, and more. Through visual charts, you can clearly see how these metrics change over time, helping you better understand your health status.",
+      title: t("trackHealthData"),
+      description: t("trackHealthDataDescription"),
+      icon: <Activity className="h-20 w-20 text-blue-500" />,
+      details: t("trackHealthDataDetails"),
       image: "/images/runner-woman-nature.png",
     },
     {
-      title: "Create Personalized Exercise Plans",
-      description: "AI will design the most suitable exercise program based on your physical condition and goals",
-      icon: <Heart className="h-20 w-20 text-primary" />,
-      details:
-        "Based on your health status, exercise ability, and personal goals, our AI system will customize an exercise plan for you. These plans include appropriate exercise types, frequency, intensity, and duration, and will dynamically adjust as you progress, ensuring you are always in the optimal training state.",
+      title: t("personalizedExercise"),
+      description: t("personalizedExerciseDescription"),
+      icon: <Heart className="h-20 w-20 text-red-500" />,
+      details: t("personalizedExerciseDetails"),
       image: "/images/runner-man-forest.png",
     },
     {
-      title: "Smart Health Analysis",
-      description:
-        "Use AI technology to analyze your health trends and provide early warnings of potential health risks",
-      icon: <Brain className="h-20 w-20 text-primary" />,
-      details:
-        "Our AI system performs deep analysis of your health data, identifying potential health risks and abnormal patterns. Through predictive analytics, the system can provide early warnings of possible health issues and offer corresponding preventive advice, helping you proactively manage your health.",
+      title: t("smartHealthAnalysis"),
+      description: t("smartHealthAnalysisDescription"),
+      icon: <Brain className="h-20 w-20 text-purple-500" />,
+      details: t("smartHealthAnalysisDetails"),
       image: "/images/runner-cartoon.png",
     },
   ]
@@ -184,39 +186,43 @@ export default function HomePage() {
     }
   }
 
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  }
+
   return (
-    <div ref={homePageRef} className="flex flex-col min-h-screen overflow-hidden">
+    <div ref={homePageRef} className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <MainNav />
 
       {/* Hero Section with Background Image and Dark Overlay */}
       <div
         ref={(el) => (sectionsRef.current[0] = el as HTMLDivElement)}
-        className="min-h-screen pt-16 flex flex-col items-center justify-center text-center p-4 relative snap-start bg-black"
+        className="min-h-screen pt-16 flex flex-col items-center justify-center text-center p-4 relative snap-start"
       >
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image src="/images/runner-man-city.png" alt="Runner in city" fill priority className="object-cover" />
         </div>
-        <div className="absolute inset-0 bg-black bg-opacity-60 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40 z-0"></div>
 
         <div className="max-w-4xl mx-auto relative z-10 hero-text">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-8 page-title text-white">
-            Intelligent Health Management System
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-8 page-title text-white bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+            {t("intelligentHealthSystem")}
           </h1>
           <p className="text-xl md:text-2xl mb-10 text-gray-200">
-            Track your health data, get personalized diet and exercise recommendations, and achieve your health goals
+            {t("healthSystemDescription")}
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Button asChild size="lg" className="text-lg py-6 px-8 green-filled-button cta-button-glow">
-              <Link href="/register">GET STARTED</Link>
+            <Button asChild size="lg" className="text-lg py-6 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              <Link href="/register">{t("getStarted")}</Link>
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="text-lg py-6 px-8 green-button"
+              className="text-lg py-6 px-8 border-blue-400 text-blue-400 hover:bg-blue-400/10"
               onClick={() => scrollToSection(1)}
             >
-              LEARN MORE
+              {t("learnMore")}
             </Button>
           </div>
         </div>
@@ -225,12 +231,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Feature Sections - 只保留3个 */}
+      {/* Feature Sections */}
       {sections.map((section, index) => (
         <div
           key={index}
           ref={(el) => (sectionsRef.current[index + 1] = el as HTMLDivElement)}
-          className="min-h-screen pt-16 flex items-center justify-center p-8 snap-start transition-opacity duration-500 horizontal-stripes"
+          className="min-h-screen pt-16 flex items-center justify-center p-8 snap-start transition-opacity duration-500"
           style={{
             backgroundColor: index % 2 === 0 ? "var(--background)" : "var(--muted)",
           }}
@@ -238,12 +244,14 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className={`flex flex-col ${index % 2 === 0 ? "lg:order-1" : "lg:order-2"}`}>
               <div className="mb-6">{section.icon}</div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 section-title">{section.title}</h2>
-              <p className="text-xl md:text-2xl mb-8 text-gray-400">{section.description}</p>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 section-title bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                {section.title}
+              </h2>
+              <p className="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300">{section.description}</p>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="text-lg py-6 px-8 w-fit green-button">
-                    LEARN MORE
+                  <Button variant="outline" className="text-lg py-6 px-8 border-blue-400 text-blue-400 hover:bg-blue-400/10">
+                    {t("learnMore")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
@@ -276,23 +284,23 @@ export default function HomePage() {
       {/* Footer Section with Background Image and Dark Overlay */}
       <div
         ref={(el) => (sectionsRef.current[sections.length + 1] = el as HTMLDivElement)}
-        className="min-h-screen pt-16 flex items-center justify-center p-8 snap-start relative bg-black"
+        className="min-h-screen pt-16 flex items-center justify-center p-8 snap-start relative"
       >
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <Image src="/images/runner-shirtless.png" alt="Runner" fill className="object-cover" />
         </div>
-        <div className="absolute inset-0 bg-black bg-opacity-60 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40 z-0"></div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10 footer-text">
           <h2 className="text-4xl md:text-5xl font-bold mb-8 section-title text-white">
-            Ready to start your health journey?
+            {t("readyToStart")}
           </h2>
           <p className="text-xl md:text-2xl mb-10 text-gray-200">
-            Register now to start tracking your health data and get personalized recommendations
+            {t("registerNow")}
           </p>
-          <Button asChild size="lg" className="text-lg py-6 px-10 green-filled-button cta-button-glow">
-            <Link href="/register">REGISTER NOW</Link>
+          <Button asChild size="lg" className="text-lg py-6 px-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+            <Link href="/register">{t("registerNow")}</Link>
           </Button>
           <div className="mt-16 text-sm text-gray-300">© 2025 Health Tracking System. All rights reserved.</div>
         </div>
@@ -305,7 +313,7 @@ export default function HomePage() {
             <button
               key={i}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                activeSection === i ? "bg-primary w-5" : "bg-gray-300 dark:bg-gray-600"
+                activeSection === i ? "bg-blue-500 w-5" : "bg-gray-300 dark:bg-gray-600"
               }`}
               onClick={() => scrollToSection(i)}
               aria-label={`Scroll to section ${i + 1}`}
