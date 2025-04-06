@@ -18,11 +18,45 @@ RUN apk add --no-cache \
     cmake \
     git \
     openblas-dev \
-    arrow-dev \
-    arrow \
-    arrow-static \
-    arrow-glib-dev \
-    boost-dev
+    boost-dev \
+    zlib-dev \
+    openssl-dev \
+    bzip2-dev \
+    lz4-dev \
+    snappy-dev \
+    zstd-dev \
+    libressl-dev \
+    curl-dev
+
+# Build Arrow C++ from source
+ENV ARROW_VERSION=14.0.2
+RUN wget https://apache.org/dyn/closer.lua?path=arrow/arrow-${ARROW_VERSION}/apache-arrow-${ARROW_VERSION}.tar.gz -O apache-arrow.tar.gz && \
+    tar xf apache-arrow.tar.gz && \
+    cd apache-arrow-${ARROW_VERSION} && \
+    mkdir build && \
+    cd build && \
+    cmake ../cpp \
+        -DARROW_COMPUTE=ON \
+        -DARROW_CSV=ON \
+        -DARROW_DATASET=ON \
+        -DARROW_FILESYSTEM=ON \
+        -DARROW_HDFS=OFF \
+        -DARROW_JSON=ON \
+        -DARROW_PARQUET=ON \
+        -DARROW_WITH_SNAPPY=ON \
+        -DARROW_WITH_LZ4=ON \
+        -DARROW_WITH_ZLIB=ON \
+        -DARROW_WITH_ZSTD=ON \
+        -DARROW_WITH_BROTLI=OFF \
+        -DARROW_WITH_BZ2=ON \
+        -DARROW_PYTHON=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../.. && \
+    rm -rf apache-arrow-${ARROW_VERSION} apache-arrow.tar.gz
 
 # Create and activate virtual environment
 RUN python3 -m venv /opt/venv
@@ -79,8 +113,19 @@ RUN apk add --no-cache \
     musl-dev \
     git \
     openblas-dev \
-    arrow \
-    arrow-dev
+    zlib \
+    lz4-libs \
+    snappy \
+    zstd-libs \
+    bzip2-libs
+
+# Copy Arrow libraries from deps stage
+COPY --from=deps /usr/lib/libarrow* /usr/lib/
+COPY --from=deps /usr/lib/libparquet* /usr/lib/
+COPY --from=deps /usr/lib/cmake/arrow /usr/lib/cmake/arrow
+COPY --from=deps /usr/lib/cmake/parquet /usr/lib/cmake/parquet
+COPY --from=deps /usr/include/arrow /usr/include/arrow
+COPY --from=deps /usr/include/parquet /usr/include/parquet
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
