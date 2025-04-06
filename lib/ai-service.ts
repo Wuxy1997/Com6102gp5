@@ -1,13 +1,13 @@
-import { PhiService } from './phi-service';
+import { BailianService } from './bailian-service';
 
-const phiService = new PhiService();
+const bailianService = new BailianService(process.env.BAILIAN_API_KEY || '');
 
 // AI服务类，处理所有AI相关功能
 export class AIService {
   // 生成聊天回复
   static async generateChatResponse(userInput: string): Promise<string> {
     try {
-      return await phiService.generateText(userInput);
+      return await bailianService.generateText(userInput);
     } catch (error) {
       console.error('Error generating chat response:', error);
       throw new Error('Failed to generate AI response');
@@ -24,7 +24,7 @@ export class AIService {
     type: "diet" | "exercise" | "sleep" | "general" = "general",
   ): Promise<string> {
     try {
-      return await phiService.generateHealthRecommendations(userData, type);
+      return await bailianService.generateHealthRecommendations(userData, type);
     } catch (error) {
       console.error('Error generating health recommendations:', error);
       throw new Error('Failed to generate health recommendations');

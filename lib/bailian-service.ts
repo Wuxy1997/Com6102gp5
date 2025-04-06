@@ -1,11 +1,3 @@
-import crypto from 'crypto';
-
-interface BailianConfig {
-  apiKey: string;
-  apiSecret: string;
-  agentKey: string;
-}
-
 export class BailianService {
   private apiKey: string;
   private baseUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
@@ -17,7 +9,7 @@ export class BailianService {
   async generateText(prompt: string): Promise<string> {
     try {
       const requestBody = JSON.stringify({
-        model: "qwen-turbo",
+        model: "deepseek-r1-distil-qwen-7b",
         input: {
           messages: [
             {
@@ -32,6 +24,7 @@ export class BailianService {
         }
       });
 
+      console.log('Making API request with key:', this.apiKey);
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
@@ -43,12 +36,14 @@ export class BailianService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
-        throw new Error(`API request failed: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('API Response:', data);
+      
       if (data.output && data.output.text) {
         return data.output.text;
       } else if (data.message && data.message.content) {
@@ -58,7 +53,7 @@ export class BailianService {
         throw new Error('Unexpected API response format');
       }
     } catch (error) {
-      console.error('Error calling DashScope API:', error);
+      console.error('Error calling Bailian API:', error);
       throw new Error('Failed to generate AI response');
     }
   }
