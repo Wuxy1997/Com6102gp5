@@ -91,13 +91,21 @@ export class OllamaService {
     Make sure to:
     - Use the exact field names: "exercise", "diet", "health"
     - Return a single JSON object, not an array
-    - Provide exactly 5 recommendations in each category`;
+    - Provide exactly 5 recommendations in each category
+    - Return ONLY the JSON object, without any markdown formatting or additional text`;
 
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
     try {
+      // Extract JSON from markdown if present
+      let jsonStr = aiResponse;
+      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1];
+      }
+
       // Try to parse the response as JSON
-      const parsedResponse = JSON.parse(aiResponse);
+      const parsedResponse = JSON.parse(jsonStr);
       
       // Handle array response by taking the first non-empty object
       let recommendations;
@@ -111,13 +119,22 @@ export class OllamaService {
         recommendations = parsedResponse;
       }
 
-      // Handle the "dieet" typo
-      const diet = recommendations.diet || recommendations.dieet || [];
+      // Handle case-insensitive field names and typos
+      const getField = (obj: any, possibleNames: string[]) => {
+        for (const name of possibleNames) {
+          const value = obj[name.toLowerCase()] || obj[name];
+          if (value) return value;
+        }
+        return [];
+      };
 
       return {
-        exercise: Array.isArray(recommendations.exercise) ? recommendations.exercise : [],
-        diet: Array.isArray(diet) ? diet : [],
-        health: Array.isArray(recommendations.health) ? recommendations.health : []
+        exercise: Array.isArray(getField(recommendations, ['exercise', 'exeRCeise'])) ? 
+                 getField(recommendations, ['exercise', 'exeRCeise']) : [],
+        diet: Array.isArray(getField(recommendations, ['diet', 'dieet', 'dieT'])) ? 
+              getField(recommendations, ['diet', 'dieet', 'dieT']) : [],
+        health: Array.isArray(getField(recommendations, ['health'])) ? 
+                getField(recommendations, ['health']) : []
       };
     } catch (error) {
       console.error('Error parsing AI response:', error);
