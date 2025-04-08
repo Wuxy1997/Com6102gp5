@@ -3,6 +3,8 @@ import clientPromise from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { ObjectId } from "mongodb"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth-options"
 
 export async function POST(request: Request) {
   try {
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
 
     response.cookies.set("sessionId", sessionId, {
       httpOnly: true,
-      secure: false, // Set to false for now since we're using HTTP
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
@@ -76,6 +78,34 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Login error:", error)
     return NextResponse.json({ error: "Login failed, please try again later" }, { status: 500 })
+  }
+}
+
+// Add GET method to handle NextAuth session check
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const client = await clientPromise
+    const db = client.db("health_app")
+    const user = await db.collection("users").findOne({ email: session.user.email })
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      _id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+    })
+  } catch (error) {
+    console.error("Auth check error:", error)
+    return NextResponse.json({ error: "Authentication check failed" }, { status: 500 })
   }
 }
 
