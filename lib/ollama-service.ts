@@ -75,26 +75,23 @@ export class OllamaService {
       }
     }
 
-    // Add system context
-    const systemPrompt = `You are a professional health advisor with expertise in fitness, nutrition, and general wellness. 
-    Please analyze the user's data and provide specific, actionable recommendations in three categories:
+    // Simplified system prompt
+    const systemPrompt = `You are a professional health advisor. Please provide specific, actionable recommendations in three categories:
     1. Exercise recommendations (5 items)
     2. Diet recommendations (5 items)
     3. General health recommendations (5 items)
 
-    Each recommendation should be:
-    - Evidence-based and safe
-    - Personalized to their data
-    - Clear and easy to understand
-    - Focused on gradual, sustainable improvements
-    - Considerate of their current habits and lifestyle
-
-    Format your response as a JSON object with exactly this structure:
+    Format your response as a JSON object with this exact structure:
     {
       "exercise": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
       "diet": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
       "health": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"]
-    }`;
+    }
+
+    Make sure to:
+    - Use the exact field names: "exercise", "diet", "health"
+    - Return a single JSON object, not an array
+    - Provide exactly 5 recommendations in each category`;
 
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
@@ -102,15 +99,25 @@ export class OllamaService {
       // Try to parse the response as JSON
       const parsedResponse = JSON.parse(aiResponse);
       
-      // Validate the response structure
-      if (!parsedResponse.exercise || !parsedResponse.diet || !parsedResponse.health) {
-        throw new Error('Response missing required fields');
+      // Handle array response by taking the first non-empty object
+      let recommendations;
+      if (Array.isArray(parsedResponse)) {
+        recommendations = parsedResponse.find(obj => 
+          obj.exercise?.length > 0 || 
+          (obj.diet || obj.dieet)?.length > 0 || 
+          obj.health?.length > 0
+        ) || parsedResponse[0];
+      } else {
+        recommendations = parsedResponse;
       }
 
+      // Handle the "dieet" typo
+      const diet = recommendations.diet || recommendations.dieet || [];
+
       return {
-        exercise: Array.isArray(parsedResponse.exercise) ? parsedResponse.exercise : [],
-        diet: Array.isArray(parsedResponse.diet) ? parsedResponse.diet : [],
-        health: Array.isArray(parsedResponse.health) ? parsedResponse.health : []
+        exercise: Array.isArray(recommendations.exercise) ? recommendations.exercise : [],
+        diet: Array.isArray(diet) ? diet : [],
+        health: Array.isArray(recommendations.health) ? recommendations.health : []
       };
     } catch (error) {
       console.error('Error parsing AI response:', error);
