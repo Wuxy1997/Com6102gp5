@@ -21,6 +21,15 @@ setInterval(() => {
   }
 }, RATE_LIMIT.windowMs)
 
+// 日志记录
+function logRequest(req: NextRequest, status: number) {
+  console.log(
+    `${new Date().toISOString()} - ${req.method} ${req.url} - ${status} - ${
+      req.ip
+    }`
+  )
+}
+
 export async function middleware(request: NextRequest) {
   // 只对API路由应用速率限制
   if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -36,6 +45,7 @@ export async function middleware(request: NextRequest) {
 
     // 检查是否超过限制
     if (countData.count >= RATE_LIMIT.max) {
+      logRequest(request, 429)
       return NextResponse.json(
         { error: "Too many requests" },
         { status: 429 }
@@ -44,6 +54,18 @@ export async function middleware(request: NextRequest) {
 
     // 增加计数
     countData.count++
+
+    // 检查请求头
+    if (request.method === "POST" || request.method === "PUT") {
+      const contentType = request.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        logRequest(request, 415)
+        return NextResponse.json(
+          { error: "Content-Type must be application/json" },
+          { status: 415 }
+        )
+      }
+    }
   }
 
   // 检查认证
@@ -53,15 +75,19 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthPage) {
     if (token) {
+      logRequest(request, 302)
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
+    logRequest(request, 200)
     return NextResponse.next()
   }
 
   if (!token && !isAuthPage) {
+    logRequest(request, 302)
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
+  logRequest(request, 200)
   return NextResponse.next()
 }
 

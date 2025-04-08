@@ -1,58 +1,26 @@
 # Use official Node.js image as base
-FROM node:20-alpine AS base
+FROM node:20-alpine
 
-# Install dependencies
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
-RUN npm install --save-dev @types/node @types/mongodb @types/next-auth --legacy-peer-deps
+# 安装系统依赖
+RUN apk add --no-cache python3 make g++
 
-# Build application
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# 复制 package.json 和 package-lock.json
+COPY package*.json ./
+
+# 安装项目依赖
+RUN npm install
+
+# 复制项目文件
 COPY . .
 
-# Set environment variables
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
-
-# Build application
+# 构建项目
 RUN npm run build
 
-# Production environment
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-# Set correct permissions
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Copy build artifacts
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-# Expose port
+# 暴露端口
 EXPOSE 3000
 
-# Start application
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
+# 启动命令
+CMD ["npm", "start"]
 

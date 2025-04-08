@@ -10,10 +10,8 @@ services:
     env_file:
       - .env
     environment:
-      - MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
       - NODE_ENV=production
-      - NEXTAUTH_SECRET=your-nextauth-secret-key
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXT_TELEMETRY_DISABLED=1
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 30s

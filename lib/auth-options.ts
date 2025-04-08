@@ -1,50 +1,48 @@
-import type { NextAuthOptions } from "next-auth"
+import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import clientPromise from "./mongodb"
-import { compare } from "bcryptjs" // Changed from 'bcrypt' to 'bcryptjs'
+import { connectToDatabase } from "./mongodb"
+import { compare } from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null
+          throw new Error("Invalid credentials")
         }
 
-        try {
-          const client = await clientPromise
-          const db = client.db("health-app")
-          const user = await db.collection("users").findOne({ email: credentials.email })
+        const { db } = await connectToDatabase()
+        const user = await db.collection("users").findOne({ 
+          email: credentials.email 
+        })
 
-          if (!user) {
-            return null
-          }
-
-          const passwordMatch = await compare(credentials.password, user.password)
-
-          if (!passwordMatch) {
-            return null
-          }
-
-          return {
-            id: user._id.toString(),
-            email: user.email,
-            name: user.name || user.email.split("@")[0],
-          }
-        } catch (error) {
-          console.error("Auth error:", error)
-          return null
+        if (!user) {
+          throw new Error("User not found")
         }
-      },
-    }),
+
+        const isValid = await compare(credentials.password, user.password)
+        if (!isValid) {
+          throw new Error("Invalid password")
+        }
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name
+        }
+      }
+    })
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt"
+  },
+  pages: {
+    signIn: "/login"
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -54,17 +52,12 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string
+      if (session.user) {
+        session.user.id = token.id
       }
       return session
-    },
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  secret: process.env.NEXTAUTH_SECRET || "default-secret-key-change-in-production",
+    }
+  }
 }
 
 export default authOptions
