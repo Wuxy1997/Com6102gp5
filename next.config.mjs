@@ -25,9 +25,8 @@ const nextConfig = {
     domains: ["images.unsplash.com"],
   },
   experimental: {
-    webpackBuildWorker: true,
-    parallelServerCompiles: true,
-    parallelServerBuildTraces: true,
+    serverActions: true,
+    serverComponentsExternalPackages: ['mongoose']
   },
   env: {
     MONGODB_URI: process.env.MONGODB_URI,

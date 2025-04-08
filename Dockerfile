@@ -12,7 +12,7 @@ COPY package*.json ./
 # 安装项目依赖，使用 --legacy-peer-deps 解决依赖冲突
 RUN npm install --legacy-peer-deps && \
     npm install --save-dev @types/bcryptjs @types/nodemailer @types/file-saver @types/node @types/next-auth @types/mongodb && \
-    npm install next-auth @auth/mongodb-adapter mongodb bcryptjs --legacy-peer-deps
+    npm install next-auth @auth/mongodb-adapter mongodb bcryptjs openai --legacy-peer-deps
 
 # 复制项目文件
 COPY . .
