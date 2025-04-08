@@ -39,19 +39,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       console.log("Checking authentication status...")
-      const res = await get("/api/auth/me")
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
       console.log("Auth check response status:", res.status)
 
-      if (res.ok) {
-        const userData = await res.json()
-        console.log("User data received:", userData)
-        setUser(userData)
-        return true
-      } else {
-        console.log("Not authenticated")
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.log("Not authenticated:", errorData)
         setUser(null)
         return false
       }
+
+      const userData = await res.json()
+      console.log("User data received:", userData)
+      setUser(userData)
+      return true
     } catch (error) {
       console.error("Auth check failed:", error)
       setUser(null)
@@ -68,21 +75,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       console.log("Login attempt with email:", email)
-      const res = await post("/api/auth/login", { email, password })
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
       console.log("Login response status:", res.status)
 
-      if (res.ok) {
-        const userData = await res.json()
-        console.log("Login successful, user data:", userData)
-        setUser(userData)
-        // Check auth status after login
-        await checkAuth()
-        return true
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error("Login failed:", errorData)
+        return false
       }
 
-      const errorData = await res.json()
-      console.error("Login failed:", errorData)
-      return false
+      const userData = await res.json()
+      console.log("Login successful, user data:", userData)
+      setUser(userData)
+      await checkAuth()
+      return true
     } catch (error) {
       console.error("Login error:", error)
       return false
@@ -92,21 +106,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     try {
       console.log("Registration attempt with email:", email)
-      const res = await post("/api/auth/register", { name, email, password })
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      })
+
       console.log("Registration response status:", res.status)
 
-      if (res.ok) {
-        const userData = await res.json()
-        console.log("Registration successful, user data:", userData)
-        setUser(userData)
-        // Check auth status after registration
-        await checkAuth()
-        return true
+      if (!res.ok) {
+        const errorData = await res.json()
+        console.error("Registration failed:", errorData)
+        return false
       }
 
-      const errorData = await res.json()
-      console.error("Registration failed:", errorData)
-      return false
+      const userData = await res.json()
+      console.log("Registration successful, user data:", userData)
+      setUser(userData)
+      await checkAuth()
+      return true
     } catch (error) {
       console.error("Registration error:", error)
       return false
@@ -116,7 +137,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       console.log("Logout attempt")
-      await post("/api/auth/logout", {})
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Logout failed")
+      }
+
       console.log("Logout successful")
       setUser(null)
       router.push("/login")
