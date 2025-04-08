@@ -5,18 +5,9 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI
-const options = {
-  maxPoolSize: 10,
-  minPoolSize: 5,
-  connectTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
-  retryWrites: true,
-  retryReads: true,
-  serverSelectionTimeoutMS: 5000,
-  heartbeatFrequencyMS: 10000
-}
+const options = {}
 
-let client: MongoClient
+let client
 let clientPromise: Promise<MongoClient>
 
 if (process.env.NODE_ENV === "development") {
@@ -39,30 +30,8 @@ export default clientPromise
 
 // Add the missing connectToDatabase export
 export async function connectToDatabase() {
-  try {
-    const client = await clientPromise
-    const db = client.db("health_app")
-    
-    // Check connection
-    await db.command({ ping: 1 })
-    console.log("Successfully connected to MongoDB")
-    
-    return { client, db }
-  } catch (error) {
-    console.error("MongoDB connection error:", error)
-    throw error
-  }
-}
-
-// Add connection status monitoring
-export async function checkDatabaseConnection() {
-  try {
-    const { db } = await connectToDatabase()
-    const result = await db.command({ ping: 1 })
-    return result.ok === 1
-  } catch (error) {
-    console.error("Database connection check failed:", error)
-    return false
-  }
+  const client = await clientPromise
+  const db = client.db("health_app")
+  return { client, db }
 }
 

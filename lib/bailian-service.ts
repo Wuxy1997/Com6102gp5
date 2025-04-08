@@ -1,25 +1,58 @@
-import OpenAI from 'openai';
+import crypto from 'crypto';
+
+interface BailianConfig {
+  apiKey: string;
+  apiSecret: string;
+  agentKey: string;
+}
 
 export class BailianService {
-  private openai: OpenAI;
+  private apiKey: string;
+  private baseUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 
   constructor(apiKey: string) {
-    this.openai = new OpenAI({
-      apiKey: apiKey,
-      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    });
+    this.apiKey = apiKey;
   }
 
   async generateText(prompt: string): Promise<string> {
     try {
-      const completion = await this.openai.chat.completions.create({
-        model: "deepseek-r1",
-        messages: [
-          { role: "user", content: prompt }
-        ],
+      const requestBody = JSON.stringify({
+        model: "qwen-max",
+        input: {
+          messages: [
+            {
+              role: "system",
+              content: "你是一个专业的健康顾问，可以为用户提供健康、营养和运动方面的建议。请保持专业、友好的态度。"
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ]
+        },
+        parameters: {
+          temperature: 0.7,
+          top_p: 0.8,
+          result_format: "message"
+        }
       });
 
-      return completion.choices[0].message.content || '';
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+          'X-DashScope-SSE': 'disable'
+        },
+        body: requestBody
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.output.text;
     } catch (error) {
       console.error('Error calling Bailian API:', error);
       throw new Error('Failed to generate AI response');
@@ -36,52 +69,26 @@ export class BailianService {
   ): Promise<string> {
     let prompt = "";
 
-    // Build prompt based on type
+    // 根据类型构建提示词
     if (type === "diet" && userData.foodData) {
-      prompt = `As a health advisor, please provide personalized nutrition recommendations based on the following user's food records. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.foodData, null, 2)}`;
+      prompt = `作为健康顾问，请根据以下用户的饮食记录提供个性化的营养建议：\n${JSON.stringify(userData.foodData, null, 2)}`;
     } else if (type === "exercise" && userData.exerciseData) {
-      prompt = `As a health advisor, please provide personalized fitness recommendations based on the following user's exercise records. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.exerciseData, null, 2)}`;
+      prompt = `作为健康顾问，请根据以下用户的运动记录提供个性化的健身建议：\n${JSON.stringify(userData.exerciseData, null, 2)}`;
     } else if (type === "sleep" && userData.healthData) {
-      prompt = `As a health advisor, please provide sleep improvement recommendations based on the following user's health data. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.healthData, null, 2)}`;
+      prompt = `作为健康顾问，请根据以下用户的健康数据提供改善睡眠的建议：\n${JSON.stringify(userData.healthData, null, 2)}`;
     } else {
-      prompt = `As a health advisor, please provide comprehensive health recommendations based on the following user's data. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n`;
+      prompt = `作为健康顾问，请根据以下用户的综合数据提供全面的健康建议：\n`;
       if (userData.healthData) {
-        prompt += `\nHealth Data: ${JSON.stringify(userData.healthData, null, 2)}`;
+        prompt += `\n健康数据：${JSON.stringify(userData.healthData, null, 2)}`;
       }
       if (userData.exerciseData) {
-        prompt += `\nExercise Records: ${JSON.stringify(userData.exerciseData, null, 2)}`;
+        prompt += `\n运动记录：${JSON.stringify(userData.exerciseData, null, 2)}`;
       }
       if (userData.foodData) {
-        prompt += `\nFood Records: ${JSON.stringify(userData.foodData, null, 2)}`;
+        prompt += `\n饮食记录：${JSON.stringify(userData.foodData, null, 2)}`;
       }
     }
 
-    // Add system context
-    const systemPrompt = `You are a professional health advisor with expertise in fitness, nutrition, and general wellness. 
-    Please analyze the user's data and provide specific, actionable recommendations in three categories:
-    1. Exercise recommendations (exactly 5 items)
-    2. Diet recommendations (exactly 5 items)
-    3. General health recommendations (exactly 5 items)
-
-    Each recommendation should be:
-    - Evidence-based and safe
-    - Personalized to their data
-    - Clear and easy to understand
-    - Focused on gradual, sustainable improvements
-    - Considerate of their current habits and lifestyle
-
-    IMPORTANT: Return ONLY a valid JSON object with no markdown formatting or additional text.
-    The response must be a valid JSON object with this exact structure:
-    {
-      "exercise": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
-      "diet": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
-      "health": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"]
-    }`;
-
-    return this.generateText(`${systemPrompt}\n\n${prompt}`);
+    return this.generateText(prompt);
   }
-}
-
-// Export the class and its methods
-export const generateHealthRecommendations = BailianService.prototype.generateHealthRecommendations;
-export const generateText = BailianService.prototype.generateText; 
+} 

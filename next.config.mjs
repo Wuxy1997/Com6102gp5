@@ -13,7 +13,6 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -22,28 +21,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ["images.unsplash.com"],
   },
   experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ['mongoose']
+    webpackBuildWorker: true,
+    parallelServerBuildTraces: true,
+    parallelServerCompiles: true,
   },
-  env: {
-    MONGODB_URI: process.env.MONGODB_URI,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    BAILIAN_API_KEY: process.env.BAILIAN_API_KEY,
-    BAILIAN_API_SECRET: process.env.BAILIAN_API_SECRET,
-    BAILIAN_APP_ID: process.env.BAILIAN_APP_ID,
-    BAILIAN_MODEL_ID: process.env.BAILIAN_MODEL_ID,
-    BAILIAN_ENDPOINT: process.env.BAILIAN_ENDPOINT,
-    EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
-    EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
-    EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
-    EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
-    EMAIL_FROM: process.env.EMAIL_FROM
-  }
 }
 
 if (userConfig) {

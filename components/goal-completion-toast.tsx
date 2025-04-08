@@ -11,52 +11,36 @@ export function GoalCompletionToast() {
     // Function to check for newly completed goals
     const checkCompletedGoals = async () => {
       try {
-        const response = await fetch("/api/goals/completed", {
-          credentials: "include", // Important for NextAuth session
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
+        const response = await fetch("/api/goals/completed")
+        if (response.ok) {
+          const data = await response.json()
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to fetch completed goals")
-        }
+          if (data.completedGoals && data.completedGoals.length > 0) {
+            setCompletedGoals(data.completedGoals)
 
-        const data = await response.json()
-
-        if (data.completedGoals && data.completedGoals.length > 0) {
-          setCompletedGoals(data.completedGoals)
-
-          // Show toast for each newly completed goal
-          data.completedGoals.forEach((goal: any) => {
-            toast({
-              title: "Goal Completed! 🎉",
-              description: `You've reached your goal: ${goal.name}`,
-              duration: 5000,
+            // Show toast for each newly completed goal
+            data.completedGoals.forEach((goal: any) => {
+              toast({
+                title: "Goal Completed! 🎉",
+                description: `You've reached your goal: ${goal.name}`,
+                duration: 5000,
+              })
             })
-          })
 
-          // Mark goals as notified
-          const markResponse = await fetch("/api/goals/mark-notified", {
-            method: "POST",
-            credentials: "include", // Important for NextAuth session
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              goalIds: data.completedGoals.map((g: any) => g._id),
-            }),
-          })
-
-          if (!markResponse.ok) {
-            const errorData = await markResponse.json()
-            throw new Error(errorData.error || "Failed to mark goals as notified")
+            // Mark goals as notified
+            await fetch("/api/goals/mark-notified", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                goalIds: data.completedGoals.map((g: any) => g._id),
+              }),
+            })
           }
         }
       } catch (error) {
         console.error("Error checking completed goals:", error)
-        // Don't show error toast to avoid spamming the user
       }
     }
 

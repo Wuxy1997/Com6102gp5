@@ -7,32 +7,32 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    env_file:
-      - .env
     environment:
+      - MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
+      - OLLAMA_HOST=http://ollama:11434
       - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: unless-stopped
+      - NEXTAUTH_SECRET=your-nextauth-secret-key
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+      - OLLAMA_HOST=0.0.0.0:11434
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
+          memory: 8G
+          cpus: '1.8'
         reservations:
-          cpus: '0.5'
-          memory: 512M
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+          memory: 4G
+          cpus: '1'
 
 volumes:
   ollama_data:
