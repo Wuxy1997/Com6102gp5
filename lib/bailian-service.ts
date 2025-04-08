@@ -38,13 +38,13 @@ export class BailianService {
 
     // Build prompt based on type
     if (type === "diet" && userData.foodData) {
-      prompt = `As a health advisor, please provide personalized nutrition recommendations based on the following user's food records. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.foodData, null, 2)}`;
+      prompt = `As a health advisor, please provide personalized nutrition recommendations based on the following user's food records. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.foodData, null, 2)}`;
     } else if (type === "exercise" && userData.exerciseData) {
-      prompt = `As a health advisor, please provide personalized fitness recommendations based on the following user's exercise records. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.exerciseData, null, 2)}`;
+      prompt = `As a health advisor, please provide personalized fitness recommendations based on the following user's exercise records. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.exerciseData, null, 2)}`;
     } else if (type === "sleep" && userData.healthData) {
-      prompt = `As a health advisor, please provide sleep improvement recommendations based on the following user's health data. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.healthData, null, 2)}`;
+      prompt = `As a health advisor, please provide sleep improvement recommendations based on the following user's health data. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n${JSON.stringify(userData.healthData, null, 2)}`;
     } else {
-      prompt = `As a health advisor, please provide comprehensive health recommendations based on the following user's data. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n`;
+      prompt = `As a health advisor, please provide comprehensive health recommendations based on the following user's data. Return the response as a pure JSON object (no markdown formatting) with three arrays: exercise, diet, and health. Each array must contain exactly 5 recommendations:\n`;
       if (userData.healthData) {
         prompt += `\nHealth Data: ${JSON.stringify(userData.healthData, null, 2)}`;
       }
@@ -56,6 +56,28 @@ export class BailianService {
       }
     }
 
-    return this.generateText(prompt);
+    // Add system context
+    const systemPrompt = `You are a professional health advisor with expertise in fitness, nutrition, and general wellness. 
+    Please analyze the user's data and provide specific, actionable recommendations in three categories:
+    1. Exercise recommendations (exactly 5 items)
+    2. Diet recommendations (exactly 5 items)
+    3. General health recommendations (exactly 5 items)
+
+    Each recommendation should be:
+    - Evidence-based and safe
+    - Personalized to their data
+    - Clear and easy to understand
+    - Focused on gradual, sustainable improvements
+    - Considerate of their current habits and lifestyle
+
+    IMPORTANT: Return ONLY a valid JSON object with no markdown formatting or additional text.
+    The response must be a valid JSON object with this exact structure:
+    {
+      "exercise": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
+      "diet": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
+      "health": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"]
+    }`;
+
+    return this.generateText(`${systemPrompt}\n\n${prompt}`);
   }
 } 

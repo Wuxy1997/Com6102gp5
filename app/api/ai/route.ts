@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb"
 import { AIService } from "@/lib/ai-service"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { z } from "zod"
 
 interface FoodRecord {
   date: Date
@@ -30,51 +31,108 @@ interface HealthRecord {
   sleepHours: number
 }
 
+// 定义数据模型
+const FoodRecordSchema = z.object({
+  date: z.date(),
+  name: z.string(),
+  calories: z.number(),
+  protein: z.number(),
+  carbs: z.number(),
+  fat: z.number(),
+})
+
+const ExerciseRecordSchema = z.object({
+  date: z.date(),
+  type: z.string(),
+  duration: z.number(),
+  caloriesBurned: z.number(),
+})
+
+const HealthRecordSchema = z.object({
+  date: z.date(),
+  weight: z.number(),
+  height: z.number(),
+  bloodPressure: z.string(),
+  heartRate: z.number(),
+  sleepHours: z.number(),
+})
+
+// 定义请求验证模式
+const ChatRequestSchema = z.object({
+  action: z.literal("chat"),
+  message: z.string().min(1, "Message is required"),
+})
+
+const RecommendationsRequestSchema = z.object({
+  action: z.literal("recommendations"),
+  type: z.enum(["diet", "exercise", "sleep", "general"]).default("general"),
+})
+
+const RequestSchema = z.discriminatedUnion("action", [
+  ChatRequestSchema,
+  RecommendationsRequestSchema,
+])
+
 // 统一处理所有AI相关请求
 export async function POST(req: NextRequest) {
   try {
+    // 验证会话
     const session = await getServerSession(authOptions)
-
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // 获取数据库连接
     const client = await clientPromise
     const db = client.db("health_app")
 
-    // Get user data
+    // 获取用户数据
     const user = await db.collection("users").findOne({ email: session.user.email })
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // 解析请求数据
+    // 解析和验证请求数据
     const requestData = await req.json()
-    const { action, message, type } = requestData
+    const validationResult = RequestSchema.safeParse(requestData)
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: validationResult.error.format() },
+        { status: 400 }
+      )
+    }
+
+    const { action, type } = validationResult.data
 
     // 根据action执行不同操作
     if (action === "chat") {
-      // 处理聊天请求
-      if (!message) {
-        return NextResponse.json({ error: "Message is required" }, { status: 400 })
-      }
-
+      const { message } = validationResult.data
+      
+      // 记录请求
+      console.log(`[AI Chat] User: ${user.email}, Message: ${message}`)
+      
       const response = await AIService.generateChatResponse(message)
       return NextResponse.json({ response })
     } else if (action === "recommendations") {
       // 处理推荐请求
-      // 获取用户数据
       const userData: {
-        foodData?: FoodRecord[];
-        exerciseData?: ExerciseRecord[];
-        healthData?: HealthRecord[];
+        foodData?: z.infer<typeof FoodRecordSchema>[];
+        exerciseData?: z.infer<typeof ExerciseRecordSchema>[];
+        healthData?: z.infer<typeof HealthRecordSchema>[];
       } = {}
 
       // 根据类型获取相关数据
       if (type === "diet" || type === "general") {
-        const foodData = await db.collection("foodRecords").find({ userId: user._id }).sort({ date: -1 }).limit(10).toArray()
-        userData.foodData = foodData.map((data: FoodRecord) => ({
-          date: new Date(data.date).toISOString().split("T")[0],
+        const foodData = await db
+          .collection("foodRecords")
+          .find({ userId: user._id })
+          .sort({ date: -1 })
+          .limit(10)
+          .toArray()
+        
+        userData.foodData = foodData.map((data) => ({
+          date: new Date(data.date),
           name: data.name,
           calories: data.calories,
           protein: data.protein,
@@ -90,8 +148,9 @@ export async function POST(req: NextRequest) {
           .sort({ date: -1 })
           .limit(10)
           .toArray()
-        userData.exerciseData = exerciseData.map((data: ExerciseRecord) => ({
-          date: new Date(data.date).toISOString().split("T")[0],
+        
+        userData.exerciseData = exerciseData.map((data) => ({
+          date: new Date(data.date),
           type: data.type,
           duration: data.duration,
           caloriesBurned: data.caloriesBurned,
@@ -99,9 +158,15 @@ export async function POST(req: NextRequest) {
       }
 
       if (type === "sleep" || type === "general") {
-        const healthData = await db.collection("healthData").find({ userId: user._id }).sort({ date: -1 }).limit(10).toArray()
-        userData.healthData = healthData.map((data: HealthRecord) => ({
-          date: new Date(data.date).toISOString().split("T")[0],
+        const healthData = await db
+          .collection("healthData")
+          .find({ userId: user._id })
+          .sort({ date: -1 })
+          .limit(10)
+          .toArray()
+        
+        userData.healthData = healthData.map((data) => ({
+          date: new Date(data.date),
           weight: data.weight,
           height: data.height,
           bloodPressure: data.bloodPressure,
@@ -110,14 +175,32 @@ export async function POST(req: NextRequest) {
         }))
       }
 
+      // 记录请求
+      console.log(`[AI Recommendations] User: ${user.email}, Type: ${type}`)
+      
       const recommendations = await AIService.generateHealthRecommendations(userData, type)
       return NextResponse.json({ recommendations })
-    } else {
-      return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
   } catch (error) {
-    console.error("Error processing AI request:", error)
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 })
+    // 记录错误
+    console.error("[AI API Error]", {
+      error,
+      timestamp: new Date().toISOString(),
+      path: req.url,
+    })
+
+    // 返回适当的错误响应
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Validation error", details: error.format() },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
 

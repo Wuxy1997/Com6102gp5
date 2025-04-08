@@ -32,11 +32,26 @@ export class AIService {
       
       // Parse AI response in JSON format
       try {
-        const parsedResponse = JSON.parse(response);
+        // 清理响应中的 Markdown 标记
+        const cleanedResponse = response
+          .replace(/```json\n?/g, '')  // 移除开头的 ```json
+          .replace(/```\n?/g, '')      // 移除结尾的 ```
+          .trim();                     // 移除首尾空白
+
+        const parsedResponse = JSON.parse(cleanedResponse);
+        
+        // Ensure each category has exactly 5 recommendations
+        const ensureFiveRecommendations = (arr: string[] | undefined) => {
+          if (!arr || !Array.isArray(arr)) return [];
+          return arr.slice(0, 5).concat(
+            Array(5 - arr.length).fill("No specific recommendation available")
+          );
+        };
+
         return {
-          exercise: Array.isArray(parsedResponse.exercise) ? parsedResponse.exercise : [],
-          diet: Array.isArray(parsedResponse.diet) ? parsedResponse.diet : [],
-          health: Array.isArray(parsedResponse.health) ? parsedResponse.health : []
+          exercise: ensureFiveRecommendations(parsedResponse.exercise),
+          diet: ensureFiveRecommendations(parsedResponse.diet),
+          health: ensureFiveRecommendations(parsedResponse.health)
         };
       } catch (error) {
         console.error('Error parsing AI response:', error);
