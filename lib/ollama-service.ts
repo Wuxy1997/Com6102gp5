@@ -92,17 +92,19 @@ export class OllamaService {
     - Use the exact field names: "exercise", "diet", "health"
     - Return a single JSON object, not an array
     - Provide exactly 5 recommendations in each category
-    - Return ONLY the JSON object, without any markdown formatting or additional text`;
+    - Return ONLY the JSON object, without any markdown formatting or additional text
+    - Do not include any prefixes like "Response:"
+    - Do not include any explanatory text after the JSON object`;
 
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
     try {
-      // Extract JSON from markdown if present
-      let jsonStr = aiResponse;
-      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1];
+      // Extract only the JSON part of the response
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON object found in response');
       }
+      const jsonStr = jsonMatch[0];
 
       // Try to parse the response as JSON
       const parsedResponse = JSON.parse(jsonStr);
