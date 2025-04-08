@@ -47,7 +47,7 @@ docker-compose up -d
 
 3. Download the AI model:
 ```bash
-docker exec -it repository-name_ollama_1 ollama pull tinyllama
+docker exec -it hq_ollama_1 ollama pull tinyllama
 ```
 
 4. Access the application:

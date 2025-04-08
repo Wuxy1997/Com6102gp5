@@ -31,7 +31,14 @@ export class OllamaService {
       }
 
       const data = await response.json();
-      return data.response;
+      // Handle both possible response formats
+      if (typeof data.response === 'string') {
+        return data.response;
+      } else if (typeof data === 'string') {
+        return data;
+      } else {
+        throw new Error('Unexpected response format from Ollama API');
+      }
     } catch (error) {
       console.error('Error calling Ollama API:', error);
       throw new Error('Failed to generate AI response');
@@ -92,7 +99,14 @@ export class OllamaService {
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
     try {
+      // Try to parse the response as JSON
       const parsedResponse = JSON.parse(aiResponse);
+      
+      // Validate the response structure
+      if (!parsedResponse.exercise || !parsedResponse.diet || !parsedResponse.health) {
+        throw new Error('Response missing required fields');
+      }
+
       return {
         exercise: Array.isArray(parsedResponse.exercise) ? parsedResponse.exercise : [],
         diet: Array.isArray(parsedResponse.diet) ? parsedResponse.diet : [],
@@ -100,6 +114,7 @@ export class OllamaService {
       };
     } catch (error) {
       console.error('Error parsing AI response:', error);
+      console.error('Raw AI response:', aiResponse);
       // Return default recommendations if parsing fails
       return {
         exercise: [
