@@ -13,6 +13,7 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -21,11 +22,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ["images.unsplash.com"],
   },
   experimental: {
     webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    parallelServerBuildTraces: true,
   },
 }
 

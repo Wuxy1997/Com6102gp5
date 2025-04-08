@@ -3,75 +3,68 @@ import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { AIService } from "@/lib/ai-service"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/lib/auth-options"
 import { z } from "zod"
+import { generateHealthRecommendations } from "@/lib/ai-service"
+import { generateHealthRecommendations as generateBailianRecommendations } from "@/lib/bailian-service"
+import { BailianService } from "@/lib/bailian-service"
 
 interface FoodRecord {
-  date: Date
   name: string
   calories: number
   protein: number
   carbs: number
   fat: number
+  timestamp: string
 }
 
 interface ExerciseRecord {
-  date: Date
   type: string
   duration: number
-  caloriesBurned: number
+  calories: number
+  timestamp: string
 }
 
-interface HealthRecord {
-  date: Date
-  weight: number
-  height: number
-  bloodPressure: string
-  heartRate: number
-  sleepHours: number
+interface HealthData {
+  sleep: number
+  stress: number
+  mood: number
+  timestamp: string
 }
 
 // 定义数据模型
 const FoodRecordSchema = z.object({
-  date: z.date(),
   name: z.string(),
   calories: z.number(),
   protein: z.number(),
   carbs: z.number(),
   fat: z.number(),
+  timestamp: z.string(),
 })
 
 const ExerciseRecordSchema = z.object({
-  date: z.date(),
   type: z.string(),
   duration: z.number(),
-  caloriesBurned: z.number(),
+  calories: z.number(),
+  timestamp: z.string(),
 })
 
-const HealthRecordSchema = z.object({
-  date: z.date(),
-  weight: z.number(),
-  height: z.number(),
-  bloodPressure: z.string(),
-  heartRate: z.number(),
-  sleepHours: z.number(),
+const HealthDataSchema = z.object({
+  sleep: z.number(),
+  stress: z.number(),
+  mood: z.number(),
+  timestamp: z.string(),
 })
 
 // 定义请求验证模式
-const ChatRequestSchema = z.object({
-  action: z.literal("chat"),
-  message: z.string().min(1, "Message is required"),
+const requestSchema = z.object({
+  type: z.enum(["diet", "exercise", "sleep", "general"]).optional(),
+  data: z.object({
+    food: z.array(FoodRecordSchema).optional(),
+    exercise: z.array(ExerciseRecordSchema).optional(),
+    health: z.array(HealthDataSchema).optional(),
+  }),
 })
-
-const RecommendationsRequestSchema = z.object({
-  action: z.literal("recommendations"),
-  type: z.enum(["diet", "exercise", "sleep", "general"]).default("general"),
-})
-
-const RequestSchema = z.discriminatedUnion("action", [
-  ChatRequestSchema,
-  RecommendationsRequestSchema,
-])
 
 // 统一处理所有AI相关请求
 export async function POST(req: NextRequest) {
@@ -93,94 +86,60 @@ export async function POST(req: NextRequest) {
     }
 
     // 解析和验证请求数据
-    const requestData = await req.json()
-    const validationResult = RequestSchema.safeParse(requestData)
+    const body = await req.json()
+    const validatedData = requestSchema.parse(body)
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Invalid request data", details: validationResult.error.format() },
-        { status: 400 }
+    // Get user's data from database
+    const foodData = await db
+      .collection("food_records")
+      .find({ userId: user._id })
+      .sort({ timestamp: -1 })
+      .limit(10)
+      .toArray()
+
+    const exerciseData = await db
+      .collection("exercise_records")
+      .find({ userId: user._id })
+      .sort({ timestamp: -1 })
+      .limit(10)
+      .toArray()
+
+    const healthData = await db
+      .collection("health_data")
+      .find({ userId: user._id })
+      .sort({ timestamp: -1 })
+      .limit(10)
+      .toArray()
+
+    // Generate recommendations based on service type
+    let recommendations
+    const aiService = new AIService()
+    const bailianService = new BailianService(process.env.BAILIAN_API_KEY || '')
+
+    if (validatedData.type === "diet") {
+      recommendations = await AIService.generateHealthRecommendations(
+        { foodData: validatedData.data.food || foodData },
+        "diet"
       )
+    } else if (validatedData.type === "exercise") {
+      recommendations = await bailianService.generateHealthRecommendations(
+        { exerciseData: validatedData.data.exercise || exerciseData },
+        "exercise"
+      )
+    } else if (validatedData.type === "sleep") {
+      recommendations = await bailianService.generateHealthRecommendations(
+        { healthData: validatedData.data.health || healthData },
+        "sleep"
+      )
+    } else {
+      recommendations = await AIService.generateHealthRecommendations({
+        foodData: validatedData.data.food || foodData,
+        exerciseData: validatedData.data.exercise || exerciseData,
+        healthData: validatedData.data.health || healthData,
+      })
     }
 
-    const { action, type } = validationResult.data
-
-    // 根据action执行不同操作
-    if (action === "chat") {
-      const { message } = validationResult.data
-      
-      // 记录请求
-      console.log(`[AI Chat] User: ${user.email}, Message: ${message}`)
-      
-      const response = await AIService.generateChatResponse(message)
-      return NextResponse.json({ response })
-    } else if (action === "recommendations") {
-      // 处理推荐请求
-      const userData: {
-        foodData?: z.infer<typeof FoodRecordSchema>[];
-        exerciseData?: z.infer<typeof ExerciseRecordSchema>[];
-        healthData?: z.infer<typeof HealthRecordSchema>[];
-      } = {}
-
-      // 根据类型获取相关数据
-      if (type === "diet" || type === "general") {
-        const foodData = await db
-          .collection("foodRecords")
-          .find({ userId: user._id })
-          .sort({ date: -1 })
-          .limit(10)
-          .toArray()
-        
-        userData.foodData = foodData.map((data) => ({
-          date: new Date(data.date),
-          name: data.name,
-          calories: data.calories,
-          protein: data.protein,
-          carbs: data.carbs,
-          fat: data.fat,
-        }))
-      }
-
-      if (type === "exercise" || type === "general") {
-        const exerciseData = await db
-          .collection("exerciseRecords")
-          .find({ userId: user._id })
-          .sort({ date: -1 })
-          .limit(10)
-          .toArray()
-        
-        userData.exerciseData = exerciseData.map((data) => ({
-          date: new Date(data.date),
-          type: data.type,
-          duration: data.duration,
-          caloriesBurned: data.caloriesBurned,
-        }))
-      }
-
-      if (type === "sleep" || type === "general") {
-        const healthData = await db
-          .collection("healthData")
-          .find({ userId: user._id })
-          .sort({ date: -1 })
-          .limit(10)
-          .toArray()
-        
-        userData.healthData = healthData.map((data) => ({
-          date: new Date(data.date),
-          weight: data.weight,
-          height: data.height,
-          bloodPressure: data.bloodPressure,
-          heartRate: data.heartRate,
-          sleepHours: data.sleepHours,
-        }))
-      }
-
-      // 记录请求
-      console.log(`[AI Recommendations] User: ${user.email}, Type: ${type}`)
-      
-      const recommendations = await AIService.generateHealthRecommendations(userData, type)
-      return NextResponse.json({ recommendations })
-    }
+    return NextResponse.json({ recommendations })
   } catch (error) {
     // 记录错误
     console.error("[AI API Error]", {
@@ -192,13 +151,13 @@ export async function POST(req: NextRequest) {
     // 返回适当的错误响应
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.format() },
+        { error: "Invalid request data", details: error.format() },
         { status: 400 }
       )
     }
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to generate recommendations" },
       { status: 500 }
     )
   }

@@ -80,4 +80,8 @@ export class BailianService {
 
     return this.generateText(`${systemPrompt}\n\n${prompt}`);
   }
-} 
+}
+
+// Export the class and its methods
+export const generateHealthRecommendations = BailianService.prototype.generateHealthRecommendations;
+export const generateText = BailianService.prototype.generateText; 

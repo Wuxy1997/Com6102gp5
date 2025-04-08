@@ -87,3 +87,7 @@ export class AIService {
   }
 }
 
+// Export the static methods
+export const generateHealthRecommendations = AIService.generateHealthRecommendations;
+export const generateChatResponse = AIService.generateChatResponse;
+
