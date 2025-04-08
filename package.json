@@ -67,7 +67,8 @@
     "ai": "latest",
     "@ai-sdk/deepseek": "latest",
     "react-chartjs-2": "latest",
-    "file-saver": "latest"
+    "file-saver": "latest",
+    "openai": "^4.28.0"
   },
   "devDependencies": {
     "@types/node": "^22",

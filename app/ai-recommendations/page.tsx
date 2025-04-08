@@ -54,25 +54,25 @@ export default function AIRecommendationsPage() {
         setRecommendations(
           data.recommendations || {
             exercise: [
-              "Incorporate 30 minutes of moderate cardio 3-4 times per week",
-              "Add strength training 2-3 times per week focusing on major muscle groups",
-              "Consider yoga or stretching to improve flexibility and reduce stress",
-              "Try interval training to boost metabolism and cardiovascular health",
-              "Ensure proper warm-up and cool-down for each workout session",
+              "Engage in 30-45 minutes of moderate-intensity cardiovascular exercise 4-5 times per week, such as brisk walking, cycling, or swimming",
+              "Incorporate progressive resistance training 2-3 times weekly, focusing on compound movements like squats, deadlifts, and bench press",
+              "Implement a structured flexibility routine including dynamic stretching before workouts and static stretching post-exercise",
+              "Add high-intensity interval training (HIIT) sessions 1-2 times per week to enhance cardiovascular fitness and metabolic rate",
+              "Include functional movement patterns and core stability exercises to improve overall body mechanics and prevent injuries"
             ],
             diet: [
-              "Increase protein intake to support muscle recovery",
-              "Add more leafy greens and colorful vegetables to your meals",
-              "Consider reducing processed food consumption",
-              "Stay hydrated by drinking at least 8 glasses of water daily",
-              "Balance your macronutrients for optimal energy throughout the day",
+              "Maintain a balanced macronutrient distribution: 40% carbohydrates, 30% protein, and 30% healthy fats",
+              "Consume a variety of colorful vegetables and fruits daily, aiming for at least 5 servings to ensure adequate micronutrient intake",
+              "Prioritize whole, unprocessed foods and limit added sugars and refined carbohydrates",
+              "Stay properly hydrated by consuming 2-3 liters of water daily, adjusting based on activity level and climate",
+              "Implement mindful eating practices and maintain consistent meal timing to support metabolic health"
             ],
             health: [
-              "Prioritize 7-8 hours of quality sleep each night",
-              "Practice stress management techniques like meditation",
-              "Consider regular health check-ups to monitor progress",
-              "Take short breaks during long periods of sitting",
-              "Maintain social connections to support mental wellbeing",
+              "Establish a consistent sleep schedule with 7-9 hours of quality sleep, maintaining a cool, dark, and quiet sleep environment",
+              "Practice daily stress management techniques such as meditation, deep breathing exercises, or progressive muscle relaxation",
+              "Schedule regular health screenings and maintain a health journal to track progress and identify patterns",
+              "Implement the 20-20-20 rule for screen time: every 20 minutes, look at something 20 feet away for 20 seconds",
+              "Cultivate strong social connections and engage in regular social activities to support mental and emotional wellbeing"
             ],
           },
         )
