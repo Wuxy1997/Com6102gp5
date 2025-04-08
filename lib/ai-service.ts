@@ -1,6 +1,10 @@
-import { OllamaService } from './ollama-service';
+import { DashScopeService } from './dashscope-service';
 
-const ollamaService = new OllamaService();
+const dashScopeService = new DashScopeService(
+  process.env.DASHSCOPE_API_KEY || '',
+  'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  'deepseek-r1'
+);
 
 // AI服务类，处理所有AI相关功能
 export class AIService {
@@ -11,7 +15,7 @@ export class AIService {
       Please provide helpful, evidence-based advice in a friendly and professional manner. 
       Focus on practical, actionable recommendations that are safe and sustainable.`;
       
-      return await ollamaService.generateText(`${systemPrompt}\n\nUser: ${userInput}`);
+      return await dashScopeService.generateText(`${systemPrompt}\n\nUser: ${userInput}`);
     } catch (error) {
       console.error('Error generating chat response:', error);
       throw new Error('Failed to generate AI response');
@@ -26,9 +30,9 @@ export class AIService {
       foodData?: any[];
     },
     type: "diet" | "exercise" | "sleep" | "general" = "general"
-  ): Promise<string> {
+  ): Promise<any> {
     try {
-      return await ollamaService.generateHealthRecommendations(userData, type);
+      return await dashScopeService.generateHealthRecommendations(userData, type);
     } catch (error) {
       console.error('Error generating health recommendations:', error);
       throw new Error('Failed to generate health recommendations');
