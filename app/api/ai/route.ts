@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { AIService } from "@/lib/ai-service"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 interface FoodRecord {
   date: Date
@@ -31,24 +33,17 @@ interface HealthRecord {
 // 统一处理所有AI相关请求
 export async function POST(req: NextRequest) {
   try {
-    const sessionId = req.cookies.get("sessionId")?.value
+    const session = await getServerSession(authOptions)
 
-    if (!sessionId) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const client = await clientPromise
     const db = client.db("health_app")
 
-    // Find session
-    const session = await db.collection("sessions").findOne({ _id: sessionId })
-
-    if (!session || new Date(session.expiresAt) < new Date()) {
-      return NextResponse.json({ error: "Session expired" }, { status: 401 })
-    }
-
     // Get user data
-    const user = await db.collection("users").findOne({ _id: new ObjectId(session.userId) })
+    const user = await db.collection("users").findOne({ email: session.user.email })
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
@@ -77,7 +72,7 @@ export async function POST(req: NextRequest) {
 
       // 根据类型获取相关数据
       if (type === "diet" || type === "general") {
-        const foodData = await db.collection("foodRecords").find({ userId: session.userId }).sort({ date: -1 }).limit(10).toArray()
+        const foodData = await db.collection("foodRecords").find({ userId: user._id }).sort({ date: -1 }).limit(10).toArray()
         userData.foodData = foodData.map((data: FoodRecord) => ({
           date: new Date(data.date).toISOString().split("T")[0],
           name: data.name,
@@ -91,7 +86,7 @@ export async function POST(req: NextRequest) {
       if (type === "exercise" || type === "general") {
         const exerciseData = await db
           .collection("exerciseRecords")
-          .find({ userId: session.userId })
+          .find({ userId: user._id })
           .sort({ date: -1 })
           .limit(10)
           .toArray()
@@ -104,7 +99,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (type === "sleep" || type === "general") {
-        const healthData = await db.collection("healthData").find({ userId: session.userId }).sort({ date: -1 }).limit(10).toArray()
+        const healthData = await db.collection("healthData").find({ userId: user._id }).sort({ date: -1 }).limit(10).toArray()
         userData.healthData = healthData.map((data: HealthRecord) => ({
           date: new Date(data.date).toISOString().split("T")[0],
           weight: data.weight,
