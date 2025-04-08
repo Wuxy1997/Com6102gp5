@@ -76,10 +76,29 @@ export class OllamaService {
     }
 
     // Simplified system prompt
-    const systemPrompt = `You are a professional health advisor. Please provide specific, actionable recommendations in three categories:
-    1. Exercise recommendations (5 items)
-    2. Diet recommendations (5 items)
-    3. General health recommendations (5 items)
+    const systemPrompt = `You are a professional health advisor. Please provide specific, actionable recommendations in three categories.
+    Each recommendation should be clear, practical and personalized based on the user's data.
+
+    For Exercise recommendations, include:
+    - Specific workout types and durations
+    - Exercise frequency
+    - Intensity levels
+    - Form and safety tips
+    - Progress tracking suggestions
+
+    For Diet recommendations, include:
+    - Specific food choices and portions
+    - Meal timing suggestions
+    - Nutritional balance tips
+    - Hydration advice
+    - Healthy eating habits
+
+    For Health recommendations, include:
+    - Sleep hygiene tips
+    - Stress management techniques
+    - Lifestyle adjustments
+    - Preventive health measures
+    - Mental wellbeing practices
 
     Format your response as a JSON object with this exact structure:
     {
@@ -88,13 +107,12 @@ export class OllamaService {
       "health": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"]
     }
 
-    Make sure to:
+    Requirements:
     - Use the exact field names: "exercise", "diet", "health"
     - Return a single JSON object, not an array
-    - Provide exactly 5 recommendations in each category
-    - Return ONLY the JSON object, without any markdown formatting or additional text
-    - Do not include any prefixes like "Response:"
-    - Do not include any explanatory text after the JSON object`;
+    - Provide exactly 5 detailed recommendations in each category
+    - Each recommendation should be a complete, actionable sentence
+    - Return ONLY the JSON object, without any additional text or formatting`;
 
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
