@@ -9,7 +9,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
-RUN npm install --save-dev @types/node openai @types/openai
+RUN npm install --save-dev @types/node openai @types/openai --legacy-peer-deps
 
 # Build application
 FROM base AS builder
