@@ -8,41 +8,60 @@ export class OllamaService {
   }
 
   async generateText(prompt: string): Promise<string> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "tinyllama",
-          prompt: prompt,
-          stream: false,
-          options: {
-            temperature: 0.7,
-            top_p: 0.8,
-            num_ctx: 2048,
-          }
-        })
-      });
+    const maxRetries = 3;
+    const timeout = 600000; // 10 minutes timeout
 
-      if (!response.ok) {
-        throw new Error(`Ollama API request failed: ${response.statusText}`);
-      }
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const data = await response.json();
-      // Handle both possible response formats
-      if (typeof data.response === 'string') {
-        return data.response;
-      } else if (typeof data === 'string') {
-        return data;
-      } else {
-        throw new Error('Unexpected response format from Ollama API');
+        const response = await fetch(`${this.baseUrl}/api/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: "tinyllama",
+            prompt: prompt,
+            stream: false,
+            options: {
+              temperature: 0.7,
+              top_p: 0.8,
+              num_ctx: 2048,
+            }
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Ollama API request failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        // Handle both possible response formats
+        if (typeof data.response === 'string') {
+          return data.response;
+        } else if (typeof data === 'string') {
+          return data;
+        } else {
+          throw new Error('Unexpected response format from Ollama API');
+        }
+      } catch (error) {
+        console.error(`Error calling Ollama API (attempt ${attempt}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries) {
+          throw new Error('Failed to generate AI response after multiple attempts');
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
-    } catch (error) {
-      console.error('Error calling Ollama API:', error);
-      throw new Error('Failed to generate AI response');
     }
+
+    throw new Error('Failed to generate AI response');
   }
 
   async generateHealthRecommendations(
@@ -76,43 +95,21 @@ export class OllamaService {
     }
 
     // Simplified system prompt
-    const systemPrompt = `You are a professional health advisor. Please provide specific, actionable recommendations in three categories.
-    Each recommendation should be clear, practical and personalized based on the user's data.
+    const systemPrompt = `As a health advisor, provide 5 recommendations each for exercise, diet, and health.
 
-    For Exercise recommendations, include:
-    - Specific workout types and durations
-    - Exercise frequency
-    - Intensity levels
-    - Form and safety tips
-    - Progress tracking suggestions
+    Guidelines:
+    - Exercise: Include workout types, frequency, and safety tips
+    - Diet: Include food choices, meal timing, and nutrition tips
+    - Health: Include sleep, stress management, and lifestyle tips
 
-    For Diet recommendations, include:
-    - Specific food choices and portions
-    - Meal timing suggestions
-    - Nutritional balance tips
-    - Hydration advice
-    - Healthy eating habits
-
-    For Health recommendations, include:
-    - Sleep hygiene tips
-    - Stress management techniques
-    - Lifestyle adjustments
-    - Preventive health measures
-    - Mental wellbeing practices
-
-    Format your response as a JSON object with this exact structure:
+    Return ONLY a JSON object in this format:
     {
-      "exercise": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
-      "diet": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"],
-      "health": ["recommendation1", "recommendation2", "recommendation3", "recommendation4", "recommendation5"]
+      "exercise": ["tip1", "tip2", "tip3", "tip4", "tip5"],
+      "diet": ["tip1", "tip2", "tip3", "tip4", "tip5"],
+      "health": ["tip1", "tip2", "tip3", "tip4", "tip5"]
     }
 
-    Requirements:
-    - Use the exact field names: "exercise", "diet", "health"
-    - Return a single JSON object, not an array
-    - Provide exactly 5 detailed recommendations in each category
-    - Each recommendation should be a complete, actionable sentence
-    - Return ONLY the JSON object, without any additional text or formatting`;
+    Make each tip specific and actionable.`;
 
     const aiResponse = await this.generateText(`${systemPrompt}\n\n${prompt}`);
     
