@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     environment:
       - MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
-      - OLLAMA_HOST=http://ollama:11434
+      - BAILIAN_API_KEY=sk-4f9195fea89a42f6bd373ffea936a0a8
       - NODE_ENV=production
       - NEXTAUTH_SECRET=your-nextauth-secret-key
       - NEXTAUTH_URL=http://localhost:3000

@@ -1,58 +1,25 @@
-import crypto from 'crypto';
-
-interface BailianConfig {
-  apiKey: string;
-  apiSecret: string;
-  agentKey: string;
-}
+import OpenAI from 'openai';
 
 export class BailianService {
-  private apiKey: string;
-  private baseUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+  private openai: OpenAI;
 
   constructor(apiKey: string) {
-    this.apiKey = apiKey;
+    this.openai = new OpenAI({
+      apiKey: apiKey,
+      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    });
   }
 
   async generateText(prompt: string): Promise<string> {
     try {
-      const requestBody = JSON.stringify({
-        model: "qwen-max",
-        input: {
-          messages: [
-            {
-              role: "system",
-              content: "你是一个专业的健康顾问，可以为用户提供健康、营养和运动方面的建议。请保持专业、友好的态度。"
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ]
-        },
-        parameters: {
-          temperature: 0.7,
-          top_p: 0.8,
-          result_format: "message"
-        }
+      const completion = await this.openai.chat.completions.create({
+        model: "deepseek-r1",
+        messages: [
+          { role: "user", content: prompt }
+        ],
       });
 
-      const response = await fetch(this.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-          'X-DashScope-SSE': 'disable'
-        },
-        body: requestBody
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.output.text;
+      return completion.choices[0].message.content || '';
     } catch (error) {
       console.error('Error calling Bailian API:', error);
       throw new Error('Failed to generate AI response');
@@ -69,23 +36,23 @@ export class BailianService {
   ): Promise<string> {
     let prompt = "";
 
-    // 根据类型构建提示词
+    // Build prompt based on type
     if (type === "diet" && userData.foodData) {
-      prompt = `作为健康顾问，请根据以下用户的饮食记录提供个性化的营养建议：\n${JSON.stringify(userData.foodData, null, 2)}`;
+      prompt = `As a health advisor, please provide personalized nutrition recommendations based on the following user's food records. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.foodData, null, 2)}`;
     } else if (type === "exercise" && userData.exerciseData) {
-      prompt = `作为健康顾问，请根据以下用户的运动记录提供个性化的健身建议：\n${JSON.stringify(userData.exerciseData, null, 2)}`;
+      prompt = `As a health advisor, please provide personalized fitness recommendations based on the following user's exercise records. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.exerciseData, null, 2)}`;
     } else if (type === "sleep" && userData.healthData) {
-      prompt = `作为健康顾问，请根据以下用户的健康数据提供改善睡眠的建议：\n${JSON.stringify(userData.healthData, null, 2)}`;
+      prompt = `As a health advisor, please provide sleep improvement recommendations based on the following user's health data. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n${JSON.stringify(userData.healthData, null, 2)}`;
     } else {
-      prompt = `作为健康顾问，请根据以下用户的综合数据提供全面的健康建议：\n`;
+      prompt = `As a health advisor, please provide comprehensive health recommendations based on the following user's data. Return the response in JSON format with three arrays: exercise, diet, and health, each containing 5 recommendations:\n`;
       if (userData.healthData) {
-        prompt += `\n健康数据：${JSON.stringify(userData.healthData, null, 2)}`;
+        prompt += `\nHealth Data: ${JSON.stringify(userData.healthData, null, 2)}`;
       }
       if (userData.exerciseData) {
-        prompt += `\n运动记录：${JSON.stringify(userData.exerciseData, null, 2)}`;
+        prompt += `\nExercise Records: ${JSON.stringify(userData.exerciseData, null, 2)}`;
       }
       if (userData.foodData) {
-        prompt += `\n饮食记录：${JSON.stringify(userData.foodData, null, 2)}`;
+        prompt += `\nFood Records: ${JSON.stringify(userData.foodData, null, 2)}`;
       }
     }
 
