@@ -11,7 +11,7 @@ export class DashScopeService {
 
   async generateText(prompt: string): Promise<string> {
     try {
-      const response = await fetch(this.baseUrl, {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -19,32 +19,28 @@ export class DashScopeService {
         },
         body: JSON.stringify({
           model: this.model,
-          input: {
-            messages: [
-              {
-                role: "system",
-                content: "You are a professional health advisor."
-              },
-              {
-                role: "user",
-                content: prompt
-              }
-            ]
-          },
-          parameters: {
-            temperature: 0.7,
-            top_p: 0.8,
-            result_format: "message"
-          }
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ]
         })
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
         throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
-      return data.output.text;
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content;
+      } else {
+        console.error('Unexpected API response structure:', data);
+        throw new Error('Unexpected response format from API');
+      }
     } catch (error) {
       console.error('Error calling DashScope API:', error);
       throw new Error('Failed to generate AI response');
