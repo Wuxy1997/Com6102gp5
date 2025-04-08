@@ -20,7 +20,6 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
-ENV BAILIAN_API_KEY=sk-4f9195fea89a42f6bd373ffea936a0a8
 
 # Build application
 RUN npm run build
@@ -31,7 +30,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV BAILIAN_API_KEY=sk-4f9195fea89a42f6bd373ffea936a0a8
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
