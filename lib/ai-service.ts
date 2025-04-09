@@ -2,7 +2,7 @@ import { DashScopeService } from './dashscope-service';
 
 const dashScopeService = new DashScopeService(
   process.env.DASHSCOPE_API_KEY || '',
-  'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
   'deepseek-r1'
 );
 

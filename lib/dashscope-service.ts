@@ -11,6 +11,12 @@ export class DashScopeService {
 
   async generateText(prompt: string): Promise<string> {
     try {
+      console.log('DashScope API Request:', {
+        url: `${this.baseUrl}/chat/completions`,
+        model: this.model,
+        prompt: prompt
+      });
+
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -28,13 +34,17 @@ export class DashScopeService {
         })
       });
 
+      console.log('DashScope API Response Status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API Error Response:', errorData);
+        console.error('DashScope API Error Response:', errorData);
         throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('DashScope API Response Data:', data);
+      
       if (data.choices && data.choices[0] && data.choices[0].message) {
         return data.choices[0].message.content;
       } else {
