@@ -12,12 +12,12 @@ export class DashScopeService {
   async generateText(prompt: string): Promise<string> {
     try {
       console.log('DashScope API Request:', {
-        url: `${this.baseUrl}/chat/completions`,
+        url: this.baseUrl,
         model: this.model,
         prompt: prompt
       });
 
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,12 +25,14 @@ export class DashScopeService {
         },
         body: JSON.stringify({
           model: this.model,
-          messages: [
-            {
-              role: "user",
-              content: prompt
-            }
-          ]
+          input: {
+            messages: [
+              {
+                role: "user",
+                content: prompt
+              }
+            ]
+          }
         })
       });
 
@@ -45,8 +47,8 @@ export class DashScopeService {
       const data = await response.json();
       console.log('DashScope API Response Data:', data);
       
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        return data.choices[0].message.content;
+      if (data.output && data.output.choices && data.output.choices[0] && data.output.choices[0].message) {
+        return data.output.choices[0].message.content;
       } else {
         console.error('Unexpected API response structure:', data);
         throw new Error('Unexpected response format from API');
