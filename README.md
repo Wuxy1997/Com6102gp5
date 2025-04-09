@@ -95,15 +95,8 @@ docker-compose  up  -d
 
   
 
-3. Download the AI model:(no need since change to online Deepseek R1)
+3. ~~Download the AI model~~:(no need since change to online Deepseek R1)
 
-```bash
-
-~~docker  exec  -it  hq_ollama_1  ollama  pull  tinyllama~~
-
-```
-
-  
 
 4. Access the application:
 
@@ -121,7 +114,7 @@ Configure the following environment variables in `docker-compose.yml`:
 
 -  `MONGODB_URI`: MongoDB connection string
 
--  `OLLAMA_HOST`: Ollama service address
+-  ~~`OLLAMA_HOST`: Ollama service address~~
 
 -  `NEXTAUTH_SECRET`: NextAuth secret key
 
@@ -157,11 +150,11 @@ health-tracker/
 
   
 
-## Development Guide
+## ~~Development Guide（no need since use docker)~~
 
   
 
-1. Install dependencies:
+~~1. Install dependencies:~~
 
 ```bash
 
@@ -237,7 +230,7 @@ npm  run  build
 
 1. AI Service Returns 500 Error:
 
-- Check Ollama service status
+- ~~Check Ollama service status~~
 
 - Verify model installation
 
