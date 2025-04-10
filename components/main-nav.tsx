@@ -47,7 +47,7 @@ export function MainNav() {
     {
       href: "/dashboard",
       label: t("dashboard"),
-      active: pathname === "/dashboard" || pathname === "/health-data" || pathname === "/exercise-tracker",
+      active: pathname === "/dashboard" || pathname === "/health-data" || pathname === "/exercise-tracker" || pathname === "/food-tracker"
       children: [
         {
           href: "/dashboard",
@@ -67,26 +67,27 @@ export function MainNav() {
           icon: <Activity className="h-4 w-4 mr-2" />,
           active: pathname === "/exercise-tracker",
         },
+        {
+          href: "/food-tracker",
+          label: t("nutrition"),
+          icon: <Utensils className="h-4 w-4 mr-2" />,
+          active: pathname === "/food-tracker",
+        },
       ],
-    },
-    {
-      href: "/food-tracker",
-      label: t("nutrition"),
-      icon: <Utensils className="h-4 w-4 mr-2" />,
-      active: pathname === "/food-tracker",
     },
     {
       href: "/workout-plans",
       label: t("workoutPlans"),
       icon: <Calendar className="h-4 w-4 mr-2" />,
       active: pathname === "/workout-plans" && !pathname.includes("/calendar"),
-    },
+    },  
     {
-      href: "/achievements",
-      label: t("achievements"),
-      icon: <Award className="h-4 w-4 mr-2" />,
-      active: pathname === "/achievements",
+      href: "/weekly-schedule",
+      label: t("schedule"),
+      icon: <Calendar className="h-4 w-4 mr-2" />,
+      active: pathname === "/weekly-schedule" || pathname.includes("/calendar-view"),
     },
+    
   ]
 
   // 次要导航项目 - 保留在"更多"下拉菜单中
@@ -98,16 +99,16 @@ export function MainNav() {
       active: pathname === "/social",
     },
     {
+      href: "/achievements",
+      label: t("achievements"),
+      icon: <Award className="h-4 w-4 mr-2" />,
+      active: pathname === "/achievements",
+    },
+    {
       href: "/ai-recommendations",
       label: t("aiRecommendations"),
       icon: <Brain className="h-4 w-4 mr-2" />,
       active: pathname === "/ai-recommendations",
-    },
-    {
-      href: "/weekly-schedule",
-      label: t("schedule"),
-      icon: <Calendar className="h-4 w-4 mr-2" />,
-      active: pathname === "/weekly-schedule" || pathname.includes("/calendar-view"),
     },
   ]
 

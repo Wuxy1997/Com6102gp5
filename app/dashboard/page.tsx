@@ -235,9 +235,6 @@ export default function DashboardPage() {
                     <p className="text-sm text-gray-400">30 minutes</p>
                   </div>
                 </div>
-                <Button size="sm" className="green-button">
-                  Start
-                </Button>
               </div>
 
               <div className="flex items-center justify-between border-b border-gray-700 pb-2">
