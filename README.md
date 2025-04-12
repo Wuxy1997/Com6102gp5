@@ -42,7 +42,7 @@ cd repository-name
 
 2. Start the services:
 ```bash
-docker-compose up -d
+docker-compose build --no-cache & docker-compose up -d
 ```
 
 3. Download the AI model:
