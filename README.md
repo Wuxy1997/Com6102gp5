@@ -45,12 +45,7 @@ cd repository-name
 docker-compose build --no-cache & docker-compose up -d
 ```
 
-3. Download the AI model:
-```bash
-docker exec -it hq_ollama_1 ollama pull tinyllama
-```
-
-4. Access the application:
+3. Access the application:
 Open your browser and visit http://localhost:3000
 
 ## Environment Configuration
