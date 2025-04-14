@@ -46,7 +46,7 @@ docker-compose build --no-cache & docker-compose up -d
 ```
 
 3. Access the application:
-Open your browser and visit http://localhost:4000
+Open your browser and visit http://localhost:3000
 
 ## Environment Configuration
 
@@ -90,7 +90,7 @@ npm run build
 
 ## Database Management
 
-- MongoDB Express UI: http://localhost:4001
+- MongoDB Express UI: http://localhost:8081
 - Default database: health_app
 - Main collections:
   - users
