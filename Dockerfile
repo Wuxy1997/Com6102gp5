@@ -47,10 +47,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 4000
 
 # 启动应用
-ENV PORT=3000
+ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
