@@ -34,9 +34,6 @@ services:
           memory: 4G
           cpus: '1'
 
-volumes:
-  ollama_data:
-
   mongo-express:
     image: mongo-express
     ports:
@@ -44,4 +41,7 @@ volumes:
     environment:
       - ME_CONFIG_MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
     restart: always
+
+volumes:
+  ollama_data:
 
