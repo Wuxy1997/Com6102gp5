@@ -12,7 +12,7 @@ services:
       - DASHSCOPE_API_KEY=sk-4f9195fea89a42f6bd373ffea936a0a8
       - NODE_ENV=production
       - NEXTAUTH_SECRET=your-nextauth-secret-key
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:4000
     depends_on:
       - ollama
 
@@ -36,4 +36,12 @@ services:
 
 volumes:
   ollama_data:
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "4001:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
+    restart: always
 
