@@ -22,7 +22,6 @@ import {
   Legend,
 } from "chart.js"
 import { Line } from "react-chartjs-2"
-import { useInputHistory } from "@/hooks/useInputHistory"
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -33,13 +32,6 @@ export default function HealthDataPage() {
   const [healthData, setHealthData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const { addToHistory, findHistory } = useInputHistory()
-  const [newHealth, setNewHealth] = useState({
-    name: "",
-    value: "",
-    unit: "",
-    date: new Date().toISOString().split("T")[0],
-  })
 
   useEffect(() => {
     if (!loading && !user) {
@@ -214,71 +206,6 @@ export default function HealthDataPage() {
     if (bmi < 25) return { category: "Normal weight", color: "text-green-500" }
     if (bmi < 30) return { category: "Overweight", color: "text-yellow-500" }
     return { category: "Obese", color: "text-red-500" }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setNewHealth(prev => {
-      const updated = { ...prev, [name]: value }
-      
-      // 当名称改变时，检查历史记录
-      if (name === "name" && value) {
-        const history = findHistory(value, "health")
-        if (history && history.calories) {
-          updated.value = history.calories.toString()
-        }
-      }
-      
-      return updated
-    })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-
-    try {
-      const response = await fetch("/api/health-data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...newHealth,
-          value: parseFloat(newHealth.value),
-        }),
-      })
-
-      if (response.ok) {
-        // 添加到历史记录
-        addToHistory({
-          name: newHealth.name,
-          calories: parseFloat(newHealth.value),
-          type: "health"
-        })
-
-        // 重置表单
-        setNewHealth({
-          name: "",
-          value: "",
-          unit: "",
-          date: new Date().toISOString().split("T")[0],
-        })
-
-        // 刷新数据
-        const healthRes = await fetch("/api/health-data")
-        if (healthRes.ok) {
-          const healthData = await healthRes.json()
-          setHealthData(healthData)
-        }
-      } else {
-        const errorData = await response.json()
-        setError(errorData.error || "Failed to add health data entry")
-      }
-    } catch (error) {
-      console.error("Error adding health data entry:", error)
-      setError("An error occurred while adding your health data entry")
-    }
   }
 
   if (loading) {
@@ -480,78 +407,6 @@ export default function HealthDataPage() {
                 </Card>
               </TabsContent>
             </Tabs>
-
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Add New Health Data Entry</CardTitle>
-                <CardDescription>Track your health metrics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-1">
-                        Metric Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={newHealth.name}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="value" className="block text-sm font-medium mb-1">
-                        Value
-                      </label>
-                      <input
-                        type="number"
-                        id="value"
-                        name="value"
-                        value={newHealth.value}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="unit" className="block text-sm font-medium mb-1">
-                        Unit
-                      </label>
-                      <input
-                        type="text"
-                        id="unit"
-                        name="unit"
-                        value={newHealth.unit}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="date" className="block text-sm font-medium mb-1">
-                        Date
-                      </label>
-                      <input
-                        type="date"
-                        id="date"
-                        name="date"
-                        value={newHealth.date}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Add Health Data Entry
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
           </>
         )}
       </main>

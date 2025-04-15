@@ -23,7 +23,6 @@ import {
   Legend,
 } from "chart.js"
 import { Line, Bar } from "react-chartjs-2"
-import { useInputHistory } from "@/hooks/useInputHistory"
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
@@ -34,13 +33,6 @@ export default function FoodTrackerPage() {
   const [foodData, setFoodData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const { addToHistory, findHistory } = useInputHistory()
-  const [newFood, setNewFood] = useState({
-    name: "",
-    calories: "",
-    mealType: "breakfast",
-    date: new Date().toISOString().split("T")[0],
-  })
 
   useEffect(() => {
     if (!loading && !user) {
@@ -191,79 +183,14 @@ export default function FoodTrackerPage() {
 
   const stats = calculateNutritionStats()
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setNewFood(prev => {
-      const updated = { ...prev, [name]: value }
-      
-      // 当名称改变时，检查历史记录
-      if (name === "name" && value) {
-        const history = findHistory(value, "nutrition")
-        if (history && history.calories) {
-          updated.calories = history.calories.toString()
-        }
-      }
-      
-      return updated
-    })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-
-    try {
-      const response = await fetch("/api/food-data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...newFood,
-          calories: parseInt(newFood.calories),
-        }),
-      })
-
-      if (response.ok) {
-        // 添加到历史记录
-        addToHistory({
-          name: newFood.name,
-          calories: parseInt(newFood.calories),
-          type: "nutrition"
-        })
-
-        // 重置表单
-        setNewFood({
-          name: "",
-          calories: "",
-          mealType: "breakfast",
-          date: new Date().toISOString().split("T")[0],
-        })
-
-        // 刷新数据
-        const foodRes = await fetch("/api/food-data")
-        if (foodRes.ok) {
-          const foodData = await foodRes.json()
-          setFoodData(foodData)
-        }
-      } else {
-        const errorData = await response.json()
-        setError(errorData.error || "Failed to add food entry")
-      }
-    } catch (error) {
-      console.error("Error adding food entry:", error)
-      setError("An error occurred while adding your food entry")
-    }
-  }
-
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <MainNav />
-      <main className="flex-1 p-4 md:p-8">
+      <main className="container mx-auto py-6 px-4 pt-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Food Tracker</h1>
@@ -405,82 +332,6 @@ export default function FoodTrackerPage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Add New Food Entry</CardTitle>
-            <CardDescription>Track your daily food intake</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-1">
-                    Food Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={newFood.name}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="calories" className="block text-sm font-medium mb-1">
-                    Calories
-                  </label>
-                  <input
-                    type="number"
-                    id="calories"
-                    name="calories"
-                    value={newFood.calories}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="mealType" className="block text-sm font-medium mb-1">
-                    Meal Type
-                  </label>
-                  <select
-                    id="mealType"
-                    name="mealType"
-                    value={newFood.mealType}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  >
-                    <option value="breakfast">Breakfast</option>
-                    <option value="lunch">Lunch</option>
-                    <option value="dinner">Dinner</option>
-                    <option value="snack">Snack</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="date" className="block text-sm font-medium mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={newFood.date}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
-                    required
-                  />
-                </div>
-              </div>
-              <Button type="submit" className="w-full">
-                Add Food Entry
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
       </main>
     </div>
   )

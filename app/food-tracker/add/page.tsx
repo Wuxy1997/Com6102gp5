@@ -14,6 +14,7 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import useInputHistory from "@/hooks/use-input-history"
 
 export default function AddFoodPage() {
   const router = useRouter()
@@ -32,9 +33,27 @@ export default function AddFoodPage() {
     notes: "",
   })
 
+  const { addToHistory, findInHistory } = useInputHistory('nutrition')
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    
+    if (name === 'foodName') {
+      const historyItem = findInHistory(value)
+      if (historyItem) {
+        setFormData(prev => ({
+          ...prev,
+          foodName: value,
+          calories: historyItem.calories || prev.calories,
+          protein: historyItem.protein || prev.protein,
+          carbs: historyItem.carbs || prev.carbs,
+          fat: historyItem.fat || prev.fat
+        }))
+        return
+      }
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSelectChange = (name: string, value: string) => {
@@ -59,24 +78,28 @@ export default function AddFoodPage() {
       })
 
       if (response.ok) {
+        addToHistory({
+          name: formData.foodName,
+          calories: formData.calories,
+          protein: formData.protein,
+          carbs: formData.carbs,
+          fat: formData.fat
+        })
+        
         const data = await response.json()
-        console.log("Food data saved:", data)
         toast({
           title: "Food entry saved",
           description: "Your food entry has been successfully recorded",
         })
 
-        // Force a small delay to ensure the data is saved before redirecting
         setTimeout(() => {
           router.push("/food-tracker")
         }, 500)
       } else {
         const data = await response.json()
-        console.error("Error saving food data:", data)
         setError(data.error || "Error saving data")
       }
     } catch (error) {
-      console.error("Error submitting food data:", error)
       setError("An error occurred while submitting data. Please try again later.")
     } finally {
       setIsSubmitting(false)
