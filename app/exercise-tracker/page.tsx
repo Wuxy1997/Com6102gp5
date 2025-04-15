@@ -24,6 +24,7 @@ import {
 } from "chart.js"
 import { Line, Bar } from "react-chartjs-2"
 import { Badge } from "@/components/ui/badge"
+import { useInputHistory } from "@/hooks/useInputHistory"
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
@@ -34,6 +35,13 @@ export default function ExerciseTrackerPage() {
   const [exerciseData, setExerciseData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  const { addToHistory, findHistory } = useInputHistory()
+  const [newExercise, setNewExercise] = useState({
+    name: "",
+    duration: "",
+    calories: "",
+    date: new Date().toISOString().split("T")[0],
+  })
 
   useEffect(() => {
     if (!loading && !user) {
@@ -251,6 +259,78 @@ export default function ExerciseTrackerPage() {
 
   const stats = calculateExerciseStats()
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setNewExercise(prev => {
+      const updated = { ...prev, [name]: value }
+      
+      // 当名称改变时，检查历史记录
+      if (name === "name" && value) {
+        const history = findHistory(value, "workout")
+        if (history) {
+          if (history.duration) {
+            updated.duration = history.duration.toString()
+          }
+          if (history.calories) {
+            updated.calories = history.calories.toString()
+          }
+        }
+      }
+      
+      return updated
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user) return
+
+    try {
+      const response = await fetch("/api/exercise-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...newExercise,
+          duration: parseInt(newExercise.duration),
+          calories: parseInt(newExercise.calories),
+        }),
+      })
+
+      if (response.ok) {
+        // 添加到历史记录
+        addToHistory({
+          name: newExercise.name,
+          duration: parseInt(newExercise.duration),
+          calories: parseInt(newExercise.calories),
+          type: "workout"
+        })
+
+        // 重置表单
+        setNewExercise({
+          name: "",
+          duration: "",
+          calories: "",
+          date: new Date().toISOString().split("T")[0],
+        })
+
+        // 刷新数据
+        const exerciseRes = await fetch("/api/exercise-data")
+        if (exerciseRes.ok) {
+          const exerciseData = await exerciseRes.json()
+          setExerciseData(exerciseData)
+        }
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || "Failed to add exercise entry")
+      }
+    } catch (error) {
+      console.error("Error adding exercise entry:", error)
+      setError("An error occurred while adding your exercise entry")
+    }
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
@@ -431,6 +511,78 @@ export default function ExerciseTrackerPage() {
             </Tabs>
           </>
         )}
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Add New Exercise Entry</CardTitle>
+            <CardDescription>Track your daily exercise</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium mb-1">
+                    Exercise Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={newExercise.name}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="duration" className="block text-sm font-medium mb-1">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    id="duration"
+                    name="duration"
+                    value={newExercise.duration}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="calories" className="block text-sm font-medium mb-1">
+                    Calories Burned
+                  </label>
+                  <input
+                    type="number"
+                    id="calories"
+                    name="calories"
+                    value={newExercise.calories}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="date" className="block text-sm font-medium mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={newExercise.date}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full">
+                Add Exercise Entry
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )
