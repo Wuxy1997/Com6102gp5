@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { AlertCircle, Plus, Weight, Ruler, Heart, Activity } from "lucide-react"
+import { AlertCircle, Plus, Weight, Ruler, Heart, Activity, Moon } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -162,7 +162,6 @@ export default function HealthDataPage() {
       }
     }
 
-    // Sort data by date and filter out entries without blood pressure data
     const sortedData = [...healthData]
       .filter((item) => item.bloodPressureSystolic && item.bloodPressureDiastolic)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -186,6 +185,53 @@ export default function HealthDataPage() {
     }
   }
 
+  // Prepare data for sleep chart
+  const prepareSleepChartData = () => {
+    if (healthData.length === 0) {
+      return {
+        labels: [],
+        datasets: [
+          {
+            label: "Sleep Hours",
+            data: [],
+            borderColor: "rgb(153, 102, 255)",
+            backgroundColor: "rgba(153, 102, 255, 0.5)",
+          },
+          {
+            label: "Sleep Quality",
+            data: [],
+            borderColor: "rgb(255, 159, 64)",
+            backgroundColor: "rgba(255, 159, 64, 0.5)",
+            yAxisID: 'y1',
+          },
+        ],
+      }
+    }
+
+    const sortedData = [...healthData]
+      .filter((item) => item.sleepHours)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    return {
+      labels: sortedData.map((item) => formatDate(item.date)),
+      datasets: [
+        {
+          label: "Sleep Hours",
+          data: sortedData.map((item) => item.sleepHours),
+          borderColor: "rgb(153, 102, 255)",
+          backgroundColor: "rgba(153, 102, 255, 0.5)",
+        },
+        {
+          label: "Sleep Quality",
+          data: sortedData.map((item) => item.sleepQuality),
+          borderColor: "rgb(255, 159, 64)",
+          backgroundColor: "rgba(255, 159, 64, 0.5)",
+          yAxisID: 'y1',
+        },
+      ],
+    }
+  }
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -196,6 +242,14 @@ export default function HealthDataPage() {
     scales: {
       y: {
         beginAtZero: false,
+      },
+      y1: {
+        beginAtZero: true,
+        max: 5,
+        position: 'right' as const,
+        grid: {
+          drawOnChartArea: false,
+        },
       },
     },
   }
@@ -221,11 +275,23 @@ export default function HealthDataPage() {
             <h1 className="text-3xl font-bold">Health Data Tracker</h1>
             <p className="text-muted-foreground">Track and analyze your health metrics over time</p>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 space-x-2">
             <Button asChild>
               <Link href="/health-data/add">
                 <Plus className="mr-2 h-4 w-4" />
-                Record New Data
+                Record Weight & BMI
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/health-data/add-blood">
+                <Heart className="mr-2 h-4 w-4" />
+                Record Blood Pressure
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/health-data/add-sleep">
+                <Moon className="mr-2 h-4 w-4" />
+                Record Sleep
               </Link>
             </Button>
           </div>
@@ -342,6 +408,17 @@ export default function HealthDataPage() {
                     <CardContent>
                       <div className="h-[300px]">
                         <Line options={chartOptions} data={prepareBloodPressureChartData()} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Sleep Trend</CardTitle>
+                      <CardDescription>Your sleep duration and quality over time</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px]">
+                        <Line options={chartOptions} data={prepareSleepChartData()} />
                       </div>
                     </CardContent>
                   </Card>
