@@ -331,28 +331,21 @@ export default function HealthDataPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Latest Weight</CardTitle>
+                  <CardTitle className="text-sm font-medium">Latest Weight & BMI</CardTitle>
                   <Weight className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{healthData[0]?.weight || "-"} kg</div>
-                  <p className="text-xs text-muted-foreground">
-                    Recorded on {healthData[0] ? formatDate(healthData[0].date) : "-"}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Latest BMI</CardTitle>
-                  <Ruler className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{healthData[0]?.bmi || "-"}</div>
-                  {healthData[0]?.bmi && (
-                    <p className={`text-xs ${getBMICategory(healthData[0].bmi).color}`}>
-                      {getBMICategory(healthData[0].bmi).category}
+                  <div className="text-2xl font-bold">
+                    {healthData.find(item => item.weight)?.weight || "-"} kg
+                  </div>
+                  {healthData.find(item => item.bmi) && (
+                    <p className={`text-xs ${getBMICategory(healthData.find(item => item.bmi)?.bmi).color}`}>
+                      BMI: {healthData.find(item => item.bmi)?.bmi} ({getBMICategory(healthData.find(item => item.bmi)?.bmi).category})
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    {healthData.find(item => item.weight) ? formatDate(healthData.find(item => item.weight)?.date) : "-"}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -362,11 +355,34 @@ export default function HealthDataPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {healthData[0]?.bloodPressureSystolic
-                      ? `${healthData[0]?.bloodPressureSystolic}/${healthData[0]?.bloodPressureDiastolic}`
+                    {healthData.find(item => item.bloodPressureSystolic)
+                      ? `${healthData.find(item => item.bloodPressureSystolic)?.bloodPressureSystolic}/${healthData.find(item => item.bloodPressureDiastolic)?.bloodPressureDiastolic}`
                       : "-"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Systolic/Diastolic (mmHg)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {healthData.find(item => item.bloodPressureSystolic) ? formatDate(healthData.find(item => item.bloodPressureSystolic)?.date) : "-"}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Latest Sleep</CardTitle>
+                  <Moon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {healthData.find(item => item.sleepHours)
+                      ? `${healthData.find(item => item.sleepHours)?.sleepHours} hrs`
+                      : "-"}
+                  </div>
+                  {healthData.find(item => item.sleepQuality) && (
+                    <p className="text-xs text-muted-foreground">
+                      Quality: {healthData.find(item => item.sleepQuality)?.sleepQuality}/5
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {healthData.find(item => item.sleepHours) ? formatDate(healthData.find(item => item.sleepHours)?.date) : "-"}
+                  </p>
                 </CardContent>
               </Card>
             </div>
