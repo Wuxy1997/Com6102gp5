@@ -380,28 +380,6 @@ export default function HealthDataPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Weight Trend</CardTitle>
-                      <CardDescription>Your weight changes over time</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[300px]">
-                        <Line options={chartOptions} data={prepareWeightChartData()} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>BMI Trend</CardTitle>
-                      <CardDescription>Your BMI changes over time</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[300px]">
-                        <Line options={chartOptions} data={prepareBMIChartData()} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="md:col-span-2">
-                    <CardHeader>
                       <CardTitle>Blood Pressure Trend</CardTitle>
                       <CardDescription>Your blood pressure changes over time</CardDescription>
                     </CardHeader>
