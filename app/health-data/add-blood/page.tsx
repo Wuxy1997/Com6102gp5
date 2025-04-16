@@ -41,7 +41,10 @@ export default function AddBloodPressurePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          bloodPressureSystolic: formData.bloodPressureSystolic,
+          bloodPressureDiastolic: formData.bloodPressureDiastolic,
+          heartRate: formData.heartRate,
+          notes: formData.notes,
           date: new Date().toISOString(),
         }),
       })

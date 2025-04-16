@@ -41,14 +41,15 @@ export default function AddHealthDataPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          weight: formData.weight,
+          height: formData.height,
           date: new Date().toISOString(),
         }),
       })
 
       if (response.ok) {
         toast({
-          title: "Health data saved",
+          title: "Weight and BMI data saved",
           description: "Your weight and BMI data has been successfully recorded",
         })
 

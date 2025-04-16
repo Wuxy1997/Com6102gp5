@@ -45,7 +45,9 @@ export default function AddSleepPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          sleepHours: formData.sleepHours,
+          sleepQuality: formData.sleepQuality,
+          notes: formData.notes,
           date: new Date().toISOString(),
         }),
       })
