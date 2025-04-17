@@ -71,23 +71,6 @@ health-tracker/
 └── Dockerfile            # Docker build file
 ```
 
-## Development Guide
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Start development server:
-```bash
-npm run dev
-```
-
-3. Build for production:
-```bash
-npm run build
-```
-
 ## Database Management
 
 - MongoDB Express UI: http://localhost:4001
