@@ -14,7 +14,7 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: "Health & Fitness Tracker",
+  title: "Wellnest",
   description: "Track your health data and get personalized diet and exercise recommendations"
 }
 

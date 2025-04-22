@@ -46,7 +46,7 @@ export function MainNav() {
     },
     {
       href: "/dashboard",
-      label: t("dashboard"),
+      label: t("Wellnest"),
       active: pathname === "/dashboard" || pathname === "/health-data" || pathname === "/exercise-tracker" || pathname === "/food-tracker",
       children: [
         {
