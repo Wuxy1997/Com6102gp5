@@ -9,7 +9,7 @@ export const supportedLanguages = {
     name: "English",
     translations: {
       // 通用
-      appName: "Health Tracker",
+      appName: "Wellnest",
       home: "Home",
       dashboard: "Dashboard",
       nutrition: "Nutrition",
