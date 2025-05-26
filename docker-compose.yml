@@ -8,8 +8,8 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - MONGODB_URI=mongodb+srv://wubowen97:970412qw@health.dpql5.mongodb.net/?retryWrites=true&w=majority&appName=health
-      - DASHSCOPE_API_KEY=sk-4f9195fea89a42f6bd373ffea936a0a8
+      - MONGODB_URI=yourmongodburl
+      - DASHSCOPE_API_KEY=yourapikey
       - NODE_ENV=production
       - NEXTAUTH_SECRET=your-nextauth-secret-key
       - NEXTAUTH_URL=http://localhost:4000
